@@ -833,7 +833,7 @@ final class BedWarsGame extends GameInstance {
 
     @Override
     public void onExplode(EntityExplodeEvent e) {
-        if (state != GameState.IN_GAME || e.getLocation().getWorld() != world()) {
+        if (state != GameState.IN_GAME || !isNear(e.getLocation())) {
             return;
         }
         e.blockList().removeIf(b -> !blocks.isPlaced(b) || luckyBlocks.contains(LocationUtil.pack(b)));

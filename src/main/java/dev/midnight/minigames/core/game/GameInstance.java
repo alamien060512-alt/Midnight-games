@@ -155,6 +155,26 @@ public abstract class GameInstance implements PlayerContext {
         return spectators.contains(p.getUniqueId());
     }
 
+    /**
+     * Whether a location belongs to this arena. Uses the optional region "bounds" (/minigame arena setregion ... bounds);
+     * without it, any player of this game within 120 blocks counts. Needed when several arenas share one world.
+     */
+    public boolean isNear(Location l) {
+        if (l.getWorld() == null || !l.getWorld().getName().equals(arena.getWorldName())) {
+            return false;
+        }
+        dev.midnight.minigames.util.Cuboid bounds = arena.getRegion("bounds");
+        if (bounds != null) {
+            return bounds.contains(l);
+        }
+        for (Player p : getOnlineOccupants()) {
+            if (p.getWorld() == l.getWorld() && p.getLocation().distanceSquared(l) <= 120.0 * 120.0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean hasRoomFor(int count) {
         return state.isJoinable() && players.size() + count <= arena.getMaxPlayers();
     }

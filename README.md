@@ -123,6 +123,13 @@ itself; a world already in that folder loads too. A failed load prints the exact
 arenas load their world automatically when needed (`worlds.auto-load: true`). `/minigame world create <name>` makes an
 empty void world (Skyblock-style games). Multiverse is not required, but any world it loaded is usable as well.
 
+**Everything in one world.** You can build every arena in a single world (even the main world) and just create several
+arenas that point to it. Nothing is created automatically: arenas exist only when you create them with
+`/minigame arena create`, and a game only starts on arenas you enabled. Resets are automatic: after every game the
+default `blocks` mode restores every block the game changed, and no world is unloaded. For BedWars/SkyWars arenas
+that sit close together, also mark each arena's area so explosions and cleanup stay inside it:
+`/minigame pos1`, `/minigame pos2`, `/minigame arena setregion <game> <arena> bounds`.
+
 **Reset strategies** (`/minigame arena setreset <game> <arena> <mode>`):
 
 | mode | what happens |
