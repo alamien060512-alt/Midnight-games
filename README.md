@@ -1,5 +1,7 @@
 # MidnightMinigames
 
+> Step-by-step arena setup for every game: [ARENAS.md](ARENAS.md)
+
 Modular all-in-one minigame framework for **Paper 26.3** (Java 25).
 One plugin, ten built-in minigames, and a small core you can extend with your own games.
 

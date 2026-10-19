@@ -557,11 +557,11 @@ games:
     pvp: false
     modes:
       play:
-        name: "<light_purple><bold>Your Generators"
+        name: "<light_purple><bold>SkyGen"
         material: BEACON
         slot: 13
         lore:
-          - "<gray>Place generators, mine, prestige."
+          - "<gray>Mine generator blocks, sell and upgrade."
           - ""
           - "<white>Players: <green>{players}"
           - "<yellow>Click to enter!"

@@ -3,6 +3,7 @@ package dev.midnight.minigames.minigames.skygen;
 import dev.midnight.minigames.MidnightMinigames;
 import dev.midnight.minigames.core.arena.Arena;
 import dev.midnight.minigames.core.island.AbstractIslandMinigame;
+import dev.midnight.minigames.core.game.JoinResult;
 import dev.midnight.minigames.core.island.Island;
 import dev.midnight.minigames.core.placeholder.PlaceholderRegistry;
 import dev.midnight.minigames.util.ConfigUtil;
@@ -11,6 +12,13 @@ import dev.midnight.minigames.util.Keys;
 import dev.midnight.minigames.util.TextUtil;
 import dev.midnight.minigames.util.WeightedTable;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
+import dev.midnight.minigames.core.player.PlayerProfile;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
+import java.util.Collection;
+import java.util.Locale;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -70,6 +78,8 @@ public final class SkyGenMinigame extends AbstractIslandMinigame {
     private final Random random = new Random();
     private final Map<UUID, Long> prestigeConfirm = new HashMap<>();
     private BukkitTask task;
+    /** Generators of the shared mode, loaded lazily from the primary arena (data.sharedgens). */
+    private List<Gen> sharedGens;
 
     public SkyGenMinigame(MidnightMinigames plugin) {
         super(plugin, "skygen", "<light_purple>SkyGen");
@@ -79,6 +89,7 @@ public final class SkyGenMinigame extends AbstractIslandMinigame {
     protected void onIslandsLoaded() {
         tiers.clear();
         gens.clear();
+        sharedGens = null;
         for (ConfigurationSection s : ConfigUtil.sections(plugin.getConfigurationManager().game("skygen"), "tiers")) {
             Tier t = new Tier();
             t.id = s.getInt("id", tiers.size() + 1);
@@ -262,10 +273,321 @@ public final class SkyGenMinigame extends AbstractIslandMinigame {
         return ItemFactory.tag(item, Keys.GENERATOR, String.valueOf(t.id));
     }
 
+
+    // ---- shared mode ("mode: shared" in games/skygen.yml) -------------------------------------------------------------
+    // One server-wide generator area built by an admin. Players cannot place blocks; they mine what the generators
+    // produce, sell the drops (/skygen sell) and buy items (/skygen buy).
+
+    boolean isShared() {
+        return cfg().getString("mode", "shared").equalsIgnoreCase("shared");
+    }
+
+    private List<Gen> shared() {
+        if (sharedGens == null) {
+            List<Gen> list = new ArrayList<>();
+            Arena a = primaryArena();
+            if (a != null) {
+                for (String raw : a.getYaml().getStringList("data.sharedgens")) {
+                    String[] p = raw.split(",");
+                    if (p.length == 4) {
+                        try {
+                            list.add(new Gen(Integer.parseInt(p[0]), Integer.parseInt(p[1]), Integer.parseInt(p[2]), Integer.parseInt(p[3])));
+                        } catch (NumberFormatException ignored) {
+                            plugin.getLogger().warning("SkyGen: corrupt shared generator entry '" + raw + "' ignored");
+                        }
+                    }
+                }
+            }
+            sharedGens = list;
+        }
+        return sharedGens;
+    }
+
+    private void saveShared(Arena arena) {
+        List<String> out = new ArrayList<>();
+        for (Gen g : shared()) {
+            out.add(g.x + "," + g.y + "," + g.z + "," + g.tier);
+        }
+        arena.getYaml().set("data.sharedgens", out);
+        plugin.getArenaManager().save(arena);
+    }
+
+    private Gen sharedAt(int x, int y, int z) {
+        for (Gen g : shared()) {
+            if (g.x == x && g.y == y && g.z == z) {
+                return g;
+            }
+        }
+        return null;
+    }
+
+    double sellValue(Material m) {
+        return cfg().getDouble("shared.sell.values." + m.name(), 0);
+    }
+
+    private double sellMultiplier(Player p) {
+        double base = cfg().getDouble("shared.sell.multiplier", 1.0);
+        for (ConfigurationSection s : ConfigUtil.sections(cfg(), "shared.sell.permission-multipliers")) {
+            String perm = s.getString("permission", "");
+            if (!perm.isEmpty() && p.hasPermission(perm)) {
+                base = Math.max(base, s.getDouble("multiplier", 1.0));
+            }
+        }
+        return base;
+    }
+
+    private void sellAll(Player p) {
+        double total = 0;
+        int items = 0;
+        ItemStack[] contents = p.getInventory().getStorageContents();
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack it = contents[i];
+            if (it == null || it.hasItemMeta()) {
+                continue;
+            }
+            double v = sellValue(it.getType());
+            if (v > 0) {
+                total += v * it.getAmount();
+                items += it.getAmount();
+                p.getInventory().setItem(i, null);
+            }
+        }
+        if (items == 0) {
+            plugin.getMessages().send(p, "skygen.nothing-to-sell");
+            return;
+        }
+        total *= sellMultiplier(p);
+        plugin.getEconomy().deposit(p, total);
+        plugin.getPlayerManager().getProfile(p).increment("skygen", "sold", items);
+        plugin.getMessages().send(p, "skygen.sold", "items", String.valueOf(items), "amount", TextUtil.formatNumber(total));
+        plugin.getEffects().play(p, "shop-buy");
+    }
+
+    /** Buys one entry of shared.buy.items; used by the buy menu. */
+    boolean buyItem(Player p, ConfigurationSection entry) {
+        double price = entry.getDouble("price", 0);
+        if (!plugin.getEconomy().withdraw(p, price)) {
+            plugin.getMessages().send(p, "skygen.not-enough", "cost", TextUtil.formatNumber(price));
+            plugin.getEffects().play(p, "shop-fail");
+            return false;
+        }
+        ItemStack item = ItemFactory.build(entry);
+        item.setAmount(Math.max(1, entry.getInt("amount", 1)));
+        for (ItemStack rest : p.getInventory().addItem(item).values()) {
+            p.getWorld().dropItemNaturally(p.getLocation(), rest);
+        }
+        plugin.getMessages().send(p, "skygen.bought-item", "name", TextUtil.plain(TextUtil.parse(entry.getString("name", entry.getName()))),
+                "price", TextUtil.formatNumber(price));
+        plugin.getEffects().play(p, "shop-buy");
+        return true;
+    }
+
+    private void sharedMine(Player player, BlockBreakEvent e) {
+        Block b = e.getBlock();
+        Gen below = sharedAt(b.getX(), b.getY() - 1, b.getZ());
+        boolean admin = plugin.getPermissions().has(player, "admin-build");
+        if (below == null) {
+            if (!admin) {
+                e.setCancelled(true);
+                plugin.getMessages().actionBar(player, "skygen.shared-no-break");
+            }
+            return;
+        }
+        e.setDropItems(false);
+        e.setExpToDrop(0);
+        boolean autosell = cfg().getBoolean("shared.sell.autosell", false);
+        double mult = sellMultiplier(player);
+        double earned = 0;
+        Collection<ItemStack> drops = b.getDrops(player.getInventory().getItemInMainHand(), player);
+        for (ItemStack drop : drops) {
+            if (autosell && sellValue(drop.getType()) > 0) {
+                earned += sellValue(drop.getType()) * drop.getAmount() * mult;
+            } else {
+                for (ItemStack rest : player.getInventory().addItem(drop).values()) {
+                    player.getWorld().dropItemNaturally(player.getLocation(), rest);
+                }
+            }
+        }
+        if (earned > 0) {
+            plugin.getEconomy().deposit(player, earned);
+            plugin.getMessages().actionBar(player, "skygen.earned", "amount", TextUtil.formatNumber(earned));
+        }
+        plugin.getPlayerManager().getProfile(player).increment("skygen", "mined", 1);
+    }
+
+    private void produceShared() {
+        for (Gen g : shared()) {
+            Tier t = tiers.get(g.tier);
+            Arena a = primaryArena();
+            World w = a == null ? null : a.getWorld();
+            if (t == null || w == null || !w.isChunkLoaded(g.x >> 4, g.z >> 4)) {
+                continue;
+            }
+            g.progress += 1.0;
+            if (g.progress >= t.interval) {
+                g.progress = 0;
+                Block above = w.getBlockAt(g.x, g.y + 1, g.z);
+                if (above.getType() == Material.AIR && w.getBlockAt(g.x, g.y, g.z).getType() == t.material) {
+                    above.setType(t.table.pick(random), false);
+                }
+            }
+        }
+    }
+
+    // ---- shared mode: entry, protection, commands -----------------------------------------------------------------
+
+    @Override
+    protected Location resolveEntry(Player player, String modeId) {
+        if (!isShared()) {
+            return super.resolveEntry(player, modeId);
+        }
+        Arena a = primaryArena();
+        if (a == null || a.getLobby() == null) {
+            plugin.getLogger().severe("skygen has no enabled arena with a spawn. /minigame arena create skygen main, setlobby, enable.");
+            return null;
+        }
+        return a.getLobby();
+    }
+
+    @Override
+    protected boolean canBuild(Player p, Location l) {
+        return isShared() ? plugin.getPermissions().has(p, "admin-build") : super.canBuild(p, l);
+    }
+
+    @Override
+    public void onFoodChange(Player player, FoodLevelChangeEvent e) {
+        if (isShared()) {
+            e.setCancelled(true);
+        }
+    }
+
+    @Override
+    public boolean handleGameCommand(Player player, String[] args) {
+        if (!isShared()) {
+            return super.handleGameCommand(player, args);
+        }
+        if (args.length == 0) {
+            return false;
+        }
+        String sub = args[0].toLowerCase(Locale.ROOT);
+        if (!List.of("sell", "buy", "shop", "stats", "spawn", "home", "leave").contains(sub)) {
+            return false;
+        }
+        if (!inside.contains(player.getUniqueId()) && join(player, "play") != JoinResult.JOINED) {
+            return true;
+        }
+        switch (sub) {
+            case "sell" -> sellAll(player);
+            case "buy", "shop" -> new SkyGenBuyMenu(plugin, this).open(player);
+            case "spawn", "home" -> {
+                Location l = resolveEntry(player, "");
+                if (l != null) {
+                    player.teleport(l);
+                }
+            }
+            case "leave" -> leave(player);
+            default -> plugin.getMessages().send(player, "skygen.shared-stats",
+                    "balance", TextUtil.formatNumber(plugin.getEconomy().getBalance(player)),
+                    "mined", String.valueOf(plugin.getPlayerManager().getProfile(player).getLong("skygen", "mined", 0)),
+                    "multiplier", String.format("%.2f", sellMultiplier(player)));
+        }
+        return true;
+    }
+
+    @Override
+    public List<String> getArenaSubcommands() {
+        return List.of("addgen", "delgen", "cleargens", "listgens");
+    }
+
+    @Override
+    public List<String> tabCompleteArena(String sub, Arena arena, String[] args) {
+        List<String> out = new ArrayList<>();
+        if (sub.equals("addgen") && args.length == 1) {
+            for (Tier t : tiers.values()) {
+                out.add(String.valueOf(t.id));
+            }
+        }
+        return out;
+    }
+
+    @Override
+    public boolean handleArenaCommand(CommandSender sender, String sub, Arena arena, String[] args) {
+        var m = plugin.getMessages();
+        switch (sub) {
+            case "addgen" -> {
+                if (!(sender instanceof Player p)) {
+                    m.send(sender, "general.players-only");
+                    return true;
+                }
+                Block target = p.getTargetBlockExact(8);
+                Tier t = null;
+                if (args.length > 0) {
+                    try {
+                        t = tiers.get(Integer.parseInt(args[0]));
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+                if (target == null || t == null) {
+                    m.send(sender, "admin.usage", "usage", "/minigame arena addgen skygen <arena> <tier>  (look at the block that becomes the generator)");
+                    return true;
+                }
+                if (arena.getWorldName().isEmpty()) {
+                    arena.setWorldName(target.getWorld().getName());
+                }
+                Gen existing = sharedAt(target.getX(), target.getY(), target.getZ());
+                if (existing != null) {
+                    shared().remove(existing);
+                }
+                target.setType(t.material, false);
+                shared().add(new Gen(target.getX(), target.getY(), target.getZ(), t.id));
+                saveShared(arena);
+                m.send(sender, "skygen.gen-added", "tier", String.valueOf(t.id), "count", String.valueOf(shared().size()));
+                startTask();
+            }
+            case "delgen" -> {
+                if (!(sender instanceof Player p)) {
+                    m.send(sender, "general.players-only");
+                    return true;
+                }
+                Block target = p.getTargetBlockExact(8);
+                Gen g = target == null ? null : sharedAt(target.getX(), target.getY(), target.getZ());
+                if (g == null) {
+                    m.send(sender, "skygen.gen-none-there");
+                    return true;
+                }
+                shared().remove(g);
+                saveShared(arena);
+                m.send(sender, "skygen.gen-removed", "count", String.valueOf(shared().size()));
+            }
+            case "cleargens" -> {
+                shared().clear();
+                saveShared(arena);
+                m.send(sender, "skygen.gens-cleared");
+            }
+            case "listgens" -> {
+                m.send(sender, "skygen.gens-list", "count", String.valueOf(shared().size()));
+                for (Gen g : shared()) {
+                    sender.sendMessage("  tier " + g.tier + " at " + g.x + " " + g.y + " " + g.z);
+                }
+            }
+            default -> {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // ---- block events -----------------------------------------------------------------------------------------------------
 
     @Override
     public void onBlockPlace(Player player, BlockPlaceEvent e) {
+        if (isShared()) {
+            if (!plugin.getPermissions().has(player, "admin-build")) {
+                e.setCancelled(true);
+                plugin.getMessages().actionBar(player, "skygen.shared-no-build");
+            }
+            return;
+        }
         String tag = ItemFactory.readTag(e.getItemInHand(), Keys.GENERATOR);
         if (tag == null) {
             super.onBlockPlace(player, e);
@@ -304,6 +626,10 @@ public final class SkyGenMinigame extends AbstractIslandMinigame {
 
     @Override
     public void onBlockBreak(Player player, BlockBreakEvent e) {
+        if (isShared()) {
+            sharedMine(player, e);
+            return;
+        }
         Island is = islands.at(e.getBlock().getLocation());
         Block b = e.getBlock();
         if (is != null && is.isMember(player.getUniqueId()) && canBuild(player, b.getLocation())) {
@@ -341,7 +667,18 @@ public final class SkyGenMinigame extends AbstractIslandMinigame {
 
     @Override
     protected void onEnter(Player player, String modeId) {
-        super.onEnter(player, modeId);
+        if (isShared()) {
+            player.setGameMode(GameMode.SURVIVAL);
+            PlayerProfile profile = plugin.getPlayerManager().getProfile(player);
+            if (profile.getLong("skygen", "starter", 0) == 0) {
+                profile.setLong("skygen", "starter", 1);
+                for (ConfigurationSection item : ConfigUtil.sections(cfg(), "shared.starter-items")) {
+                    player.getInventory().addItem(ItemFactory.build(item));
+                }
+            }
+        } else {
+            super.onEnter(player, modeId);
+        }
         startTask();
     }
 
@@ -367,6 +704,10 @@ public final class SkyGenMinigame extends AbstractIslandMinigame {
     }
 
     private void produce() {
+        if (isShared()) {
+            produceShared();
+            return;
+        }
         Set<UUID> done = new HashSet<>();
         for (UUID id : inside) {
             Island is = islands.of(id);
@@ -490,7 +831,13 @@ public final class SkyGenMinigame extends AbstractIslandMinigame {
     public Map<String, String> getScoreboardVariables(Player player) {
         Map<String, String> v = super.getScoreboardVariables(player);
         Island is = islands.of(player.getUniqueId());
-        if (is != null) {
+        if (isShared()) {
+            v.put("rank", "-");
+            v.put("prestige", "0");
+            v.put("multiplier", String.format("%.2f", sellMultiplier(player)));
+            v.put("generators", String.valueOf(shared().size()));
+            v.put("speed", "-");
+        } else if (is != null) {
             v.put("rank", TextUtil.plain(TextUtil.parse(rankName(is))));
             v.put("prestige", String.valueOf(prestige(is)));
             v.put("multiplier", String.format("%.2f", multiplier(is)));

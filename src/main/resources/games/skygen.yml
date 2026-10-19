@@ -4,6 +4,42 @@
 #  Commands: /skygen create|home|..., shop, upgrades, prestige [confirm], stats
 #  Generator blocks (bought in /skygen shop) produce a block above themselves; mining it pays "values" x multiplier.
 # ======================================================================================
+# mode: shared  = one generator area for everyone (admin builds it, players can't place blocks; they mine, sell, buy)
+# mode: island  = per-player islands where players place purchased generators (the original SkyGen)
+mode: shared
+
+# ---- shared mode ----
+# Setup: /minigame arena create skygen main, setlobby, then look at a block and
+# /minigame arena addgen skygen main <tier>  (turns it into a generator; the block above it produces ore).
+shared:
+  sell:
+    autosell: false           # true = mined blocks pay instantly instead of dropping items
+    multiplier: 1.0
+    permission-multipliers:   # best matching multiplier wins
+      - {permission: "midnight.skygen.vip", multiplier: 1.5}
+    values:                   # coins per DROPPED item
+      COBBLESTONE: 1
+      COAL: 4
+      RAW_IRON: 9
+      RAW_GOLD: 20
+      REDSTONE: 5
+      LAPIS_LAZULI: 7
+      DIAMOND: 80
+      EMERALD: 160
+      OBSIDIAN: 300
+  starter-items:
+    - {material: STONE_PICKAXE, name: "<gold>SkyGen Pickaxe", unbreakable: true, enchants: {efficiency: 3}}
+  buy:
+    title: "<dark_gray>SkyGen Shop"
+    rows: 3
+    sell-slot: 22
+    items:
+      - {slot: 10, material: IRON_PICKAXE, name: "<white>Iron Pickaxe", unbreakable: true, enchants: {efficiency: 4}, price: 2500}
+      - {slot: 11, material: DIAMOND_PICKAXE, name: "<aqua>Diamond Pickaxe", unbreakable: true, enchants: {efficiency: 5}, price: 25000}
+      - {slot: 12, material: NETHERITE_PICKAXE, name: "<dark_purple>Netherite Pickaxe", unbreakable: true, enchants: {efficiency: 7, fortune: 3}, price: 250000}
+      - {slot: 14, material: COOKED_BEEF, name: "<gold>Steak", amount: 16, price: 100}
+      - {slot: 15, material: GOLDEN_APPLE, name: "<gold>Golden Apple", amount: 2, price: 1000}
+
 island:
   spacing: 200
   center-y: 64
