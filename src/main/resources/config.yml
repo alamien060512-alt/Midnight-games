@@ -1,19 +1,15 @@
-# ======================================================================================
-#  MidnightMinigames - config.yml
-#  Texts support MiniMessage (<red>, <gradient:#fff:#000>, <bold> ...) and legacy &-codes.
-#  Detailed per-game settings (shops, loot, ranks, kits...) live in plugins/MidnightMinigames/games/*.yml
-#  Reload everything with /minigame reload
-# ======================================================================================
 
-# ---- Storage -----------------------------------------------------------------------
-# Player statistics (wins, losses, kills, deaths, coins, games played) and per-game data.
-# All database access runs on a dedicated worker thread - never on the main thread.
+#  Midnight MiniGames is a Copyrighted code made by IMhungry1480
+#  Reload everything with /minigame reload
+
+
+# Storage
 database:
-  type: sqlite              # sqlite | mysql (MariaDB works through the MySQL protocol)
+  type: sqlite              # sqlite/mysql (MariaDB works through the MySQL protocol)
   sqlite-file: data/stats.db
   table-prefix: midnight_
-  autosave-minutes: 5       # dirty profiles are also saved when a player quits
-  # --- only used when type: mysql ---
+  autosave-minutes: 5  
+  # only used when type: mysql
   host: localhost
   port: 3306
   database: midnight
@@ -21,15 +17,16 @@ database:
   password: ""
   parameters: "useSSL=false&autoReconnect=true"
 
-# ---- Economy ---------------------------------------------------------------------------
-# internal = the plugin's own coins (the "coins" stat). vault = any Vault economy (soft hook, via reflection).
+# Economy
+# internal = the plugin's own coins
+# vault = Vault plugins
 economy:
   provider: internal
 
-# ---- Main lobby ------------------------------------------------------------------------
+# Main Lobby
 lobby:
-  # Set in-game with /minigame setlobby (stored in data/lobby.yml). This value is only a fallback:
-  # format "world,x,y,z,yaw,pitch"
+  # Set in-game with /minigame setlobby (stored in data/lobby.yml)
+  # format = "world,x,y,z,yaw,pitch"
   location: ""
   teleport-on-join: true
   give-compass-on-join: true      # compass item is configured in menus.yml -> lobby-items.compass
@@ -40,29 +37,26 @@ lobby:
   disable-damage: true
   disable-hunger: true
 
-# ---- Worlds & arena resets ----------------------------------------------------------------
-worlds:
-  auto-load: true                 # load arena worlds on demand when their folder exists
-  restore-blocks-per-tick: 2000   # block-restore speed after a game (spread over ticks)
-  # World-copy reset replaces the whole world folder with a copy of
-  # plugins/MidnightMinigames/world-templates/<worldname>. It DELETES the existing world folder, so it is OFF by
-  # default and only used by arenas with "reset-mode: world-copy" (/minigame arena setreset <g> <a> world-copy).
-  world-copy-reset:
-    enabled: false
+# Hasnt been fully tested - DO NOT USE UNLESS YOU KNOW WHAT YOURE DOING
+ worlds:
+   auto-load: false                 # load arena worlds on demand when their folder exists
+   restore-blocks-per-tick: 2000   # block-restore speed after a game 
+ world-copy-reset:
+   enabled: false
 
-# ---- Defaults for new arenas ---------------------------------------------------------------
+#  Defaults for new arenas 
 defaults:
-  countdown: 15          # seconds in the lobby once min players are reached
-  full-countdown: 10     # countdown is shortened to this when the arena is full
-  game-time: 1800        # max game length in seconds (0 = unlimited)
+  countdown: 15          # Delay before start
+  full-countdown: 10     # Delay when the match is full
+  game-time: 1800        # max game time in seconds, 0 is unlimited
   end-delay: 8           # seconds between the winner announcement and the arena reset
 
 party:
   max-size: 4
   invite-expire-seconds: 60
 
-# Commands (without the slash) that players cannot use while inside a round based game.
-# Players with midnight.admin are exempt.
+# commands (without the slash) that players cannot use while inside a round based game
+# players with midnight.admin are exempt
 restrictions:
   blocked-commands: [spawn, home, tpa, tpaccept, warp, back, tp, hub, lobby]
 
@@ -71,8 +65,8 @@ titles:
   stay: 40
   fade-out: 10
 
-# ---- Sounds -----------------------------------------------------------------------------------
-# Any vanilla sound key. Set "enabled: false" to silence everything.
+# Sounds
+# Any vanilla sound key. Set "enabled: false" to silence everything 
 sounds:
   enabled: true
   countdown:      {sound: "block.note_block.hat",          volume: 1.0, pitch: 1.0}
@@ -99,13 +93,7 @@ effects:
     count: 2
   elimination-lightning: false
 
-# ---- Scoreboard -------------------------------------------------------------------------------
-# One sidebar per player. Lines are only re-sent when their text changed. A line that consists only of
-# placeholders which resolve to nothing is hidden (used for the BedWars team list).
-# Variables: {player} {online} {in_games} {coins} {wins} {losses} {kills} {deaths} {date}
-#   in games also: {game} {arena} {mode} {state} {players} {max} {min} {countdown} {countdown_line} {time}
-#   {timeleft} {team} {team_colored} {alive} - plus game specific ones (see games/*.yml comments).
-# With PlaceholderAPI installed, any %placeholder% works too.
+# Scoreboard 
 scoreboard:
   enabled: true
   update-ticks: 20
@@ -269,14 +257,13 @@ scoreboard:
           - ""
           - "<yellow>play.yourserver.net"
 
-# ---- Tab list (optional) -----------------------------------------------------------------------
-# Updated on join / game start only (no repeating task). Other plugins can add providers through the API.
+#  Tab list - optional
 tab:
   enabled: false
   format: "{prefix}{player}{suffix}"
   prefixes:
     lobby: ""
-    prison: ""      # prison / skygen add their own rank prefix
+    prison: ""     
   header:
     - ""
     - "<gradient:#7b2ff7:#f107a3><bold>Midnight Network"
@@ -285,13 +272,6 @@ tab:
     - "<yellow>play.yourserver.net"
     - ""
 
-# ======================================================================================
-#  Games. "enabled: false" hides a game from the menus and skips loading it.
-#  modes: shown in the mode GUI. Keys: name, material, lore, slot, team-size, lucky, min-players, max-players
-#  (min/max-players are hints printed by /minigame arena setmode; the arena file holds the real values).
-#  An arena belongs to exactly one mode (arena yml: mode: doubles) - create one arena per map and mode.
-#  rewards: coins paid on win / loss / kill (parkour: finish).
-# ======================================================================================
 games:
   bedwars:
     enabled: true
