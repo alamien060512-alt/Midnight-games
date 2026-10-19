@@ -1,23 +1,14 @@
-# ======================================================================================
-#  SkyGen - games/skygen.yml
-#  Setup is the same as Skyblock (void world, arena "main", hub spawn, enable).
-#  Commands: /skygen create|home|..., shop, upgrades, prestige [confirm], stats
-#  Generator blocks (bought in /skygen shop) produce a block above themselves; mining it pays "values" x multiplier.
-# ======================================================================================
-# mode: shared  = one generator area for everyone (admin builds it, players can't place blocks; they mine, sell, buy)
-# mode: island  = per-player islands where players place purchased generators (the original SkyGen)
+
 mode: shared
 
-# ---- shared mode ----
-# Setup: /minigame arena create skygen main, setlobby, then look at a block and
-# /minigame arena addgen skygen main <tier>  (turns it into a generator; the block above it produces ore).
+
 shared:
   sell:
-    autosell: false           # true = mined blocks pay instantly instead of dropping items
+    autosell: false          
     multiplier: 1.0
-    permission-multipliers:   # best matching multiplier wins
+    permission-multipliers:   
       - {permission: "midnight.skygen.vip", multiplier: 1.5}
-    values:                   # coins per DROPPED item
+    values:              
       COBBLESTONE: 1
       COAL: 4
       RAW_IRON: 9
@@ -62,8 +53,7 @@ template:
     - {dy: -3, radius: 3, material: STONE}
     - {dy: -4, radius: 1, material: BEDROCK}
 
-# Generator tiers. material = the generator block itself, interval = seconds per produced block (before the speed
-# upgrade), blocks = weighted table of produced blocks.
+
 tiers:
   - id: 1
     name: "<gray>Cobble Generator"
@@ -96,7 +86,7 @@ tiers:
     interval: 4
     blocks: {DIAMOND_ORE: 50, EMERALD_ORE: 40, OBSIDIAN: 10}
 
-# Coins paid for mining a produced block (before multipliers). Missing = worth nothing.
+
 values:
   COBBLESTONE: 1
   COAL_ORE: 4
@@ -108,7 +98,6 @@ values:
   EMERALD_ORE: 160
   OBSIDIAN: 300
 
-# Island upgrades (bought by the owner). cost = base-cost * cost-growth ^ currentLevel
 upgrades:
   speed:
     slot: 11
@@ -118,7 +107,7 @@ upgrades:
     max: 10
     base-cost: 750
     cost-growth: 1.7
-    per-level: 0.08        # -8% production time per level
+    per-level: 0.08    
   multiplier:
     slot: 15
     material: GOLD_INGOT
@@ -127,9 +116,8 @@ upgrades:
     max: 10
     base-cost: 1000
     cost-growth: 1.8
-    per-level: 0.25        # +25% coins per level
+    per-level: 0.25       
 
-# Prestige: costs money, resets generators and upgrades, grants a permanent multiplier and rank.
 prestige:
   base-cost: 150000
   cost-growth: 2.5
@@ -137,7 +125,7 @@ prestige:
   multiplier-per-prestige: 0.5
   extra-generators: 2
 
-# Rank name per prestige level (index = prestige)
+
 ranks:
   - "<gray>Novice"
   - "<green>Apprentice"
