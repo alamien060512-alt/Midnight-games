@@ -38,11 +38,11 @@ lobby:
   disable-hunger: true
 
 # Hasnt been fully tested - DO NOT USE UNLESS YOU KNOW WHAT YOURE DOING
- worlds:
-   auto-load: false                 # load arena worlds on demand when their folder exists
-   restore-blocks-per-tick: 2000   # block-restore speed after a game 
- world-copy-reset:
-   enabled: false
+worlds:
+  auto-load: false                 # load arena worlds on demand when their folder exists
+  restore-blocks-per-tick: 2000   # block-restore speed after a game
+  world-copy-reset:
+    enabled: false
 
 #  Defaults for new arenas 
 defaults:
