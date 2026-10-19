@@ -78,6 +78,20 @@ public final class GameManager {
         return out;
     }
 
+    /** Running games whose arena contains / is close to the location (several arenas may share one world). */
+    public List<GameInstance> nearInstances(org.bukkit.Location l) {
+        List<GameInstance> out = new ArrayList<>();
+        if (instances.isEmpty() || l.getWorld() == null) {
+            return out;
+        }
+        for (GameInstance g : instances) {
+            if (g.getState() == GameState.IN_GAME && g.isNear(l)) {
+                out.add(g);
+            }
+        }
+        return out;
+    }
+
     public Set<GameInstance> getInstances() {
         return instances;
     }

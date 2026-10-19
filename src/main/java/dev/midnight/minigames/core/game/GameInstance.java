@@ -175,6 +175,36 @@ public abstract class GameInstance implements PlayerContext {
         return false;
     }
 
+    /** Remembers the original state of a block changed by something other than a player click (liquids, TNT, fire...). */
+    public void trackChange(org.bukkit.block.Block block) {
+        if (state == GameState.IN_GAME) {
+            blocks.record(block);
+        }
+    }
+
+    /** Removes dropped items, arrows and primed TNT left inside the arena bounds (only when bounds are set). */
+    private void clearLooseEntities() {
+        dev.midnight.minigames.util.Cuboid b = arena.getRegion("bounds");
+        World w = world();
+        if (b == null || w == null) {
+            return;
+        }
+        for (int cx = b.minX >> 4; cx <= b.maxX >> 4; cx++) {
+            for (int cz = b.minZ >> 4; cz <= b.maxZ >> 4; cz++) {
+                if (!w.isChunkLoaded(cx, cz)) {
+                    continue;
+                }
+                for (Entity en : w.getChunkAt(cx, cz).getEntities()) {
+                    if ((en instanceof org.bukkit.entity.Item || en instanceof Projectile
+                            || en instanceof org.bukkit.entity.TNTPrimed || en instanceof org.bukkit.entity.FallingBlock)
+                            && b.contains(en.getLocation())) {
+                        en.remove();
+                    }
+                }
+            }
+        }
+    }
+
     public boolean hasRoomFor(int count) {
         return state.isJoinable() && players.size() + count <= arena.getMaxPlayers();
     }
@@ -635,6 +665,7 @@ public abstract class GameInstance implements PlayerContext {
         spectators.clear();
         try {
             onCleanup();
+            clearLooseEntities();
         } catch (Exception ex) {
             plugin.getLogger().warning("Cleanup error: " + ex.getMessage());
         }

@@ -228,7 +228,71 @@ public final class CoreListener implements Listener {
             return;
         }
         for (GameInstance gi : plugin.getGameManager().instancesIn(w)) {
+            if (gi.isNear(e.getLocation())) {
+                for (org.bukkit.block.Block b : e.blockList()) {
+                    gi.trackChange(b); // remember the originals before the game filters the list
+                }
+            }
             gi.onExplode(e);
+        }
+    }
+
+    // ---- block changes that are not caused by a direct click: remembered so the arena resets completely --------
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBucket(org.bukkit.event.player.PlayerBucketEmptyEvent e) {
+        for (GameInstance gi : plugin.getGameManager().nearInstances(e.getBlock().getLocation())) {
+            gi.trackChange(e.getBlock());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBucketFill(org.bukkit.event.player.PlayerBucketFillEvent e) {
+        for (GameInstance gi : plugin.getGameManager().nearInstances(e.getBlock().getLocation())) {
+            gi.trackChange(e.getBlock());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onFlow(org.bukkit.event.block.BlockFromToEvent e) {
+        if (plugin.getGameManager().getInstances().isEmpty()) {
+            return;
+        }
+        for (GameInstance gi : plugin.getGameManager().nearInstances(e.getToBlock().getLocation())) {
+            gi.trackChange(e.getToBlock());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBurn(org.bukkit.event.block.BlockBurnEvent e) {
+        for (GameInstance gi : plugin.getGameManager().nearInstances(e.getBlock().getLocation())) {
+            gi.trackChange(e.getBlock());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onIgnite(org.bukkit.event.block.BlockIgniteEvent e) {
+        for (GameInstance gi : plugin.getGameManager().nearInstances(e.getBlock().getLocation())) {
+            gi.trackChange(e.getBlock());
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBlockExplode(org.bukkit.event.block.BlockExplodeEvent e) {
+        for (GameInstance gi : plugin.getGameManager().nearInstances(e.getBlock().getLocation())) {
+            for (org.bukkit.block.Block b : e.blockList()) {
+                gi.trackChange(b);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityChangeBlock(org.bukkit.event.entity.EntityChangeBlockEvent e) {
+        if (e.getEntity() instanceof Player) {
+            return;
+        }
+        for (GameInstance gi : plugin.getGameManager().nearInstances(e.getBlock().getLocation())) {
+            gi.trackChange(e.getBlock());
         }
     }
 
