@@ -202,6 +202,7 @@ public final class CoreListener implements Listener {
             c.onBlockBreak(p, e);
         } else if (protectedLobby(p, e.getBlock().getWorld())) {
             e.setCancelled(true);
+            plugin.getMessages().actionBar(p, "general.lobby-protected");
         }
     }
 
@@ -213,6 +214,7 @@ public final class CoreListener implements Listener {
             c.onBlockPlace(p, e);
         } else if (protectedLobby(p, e.getBlock().getWorld())) {
             e.setCancelled(true);
+            plugin.getMessages().actionBar(p, "general.lobby-protected");
         }
     }
 

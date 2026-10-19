@@ -928,6 +928,7 @@ public abstract class GameInstance implements PlayerContext {
     public void onBlockBreak(Player player, BlockBreakEvent e) {
         if (frozenOrLobby(player)) {
             e.setCancelled(true);
+            explainBlocked(player);
         }
     }
 
@@ -935,7 +936,13 @@ public abstract class GameInstance implements PlayerContext {
     public void onBlockPlace(Player player, BlockPlaceEvent e) {
         if (frozenOrLobby(player)) {
             e.setCancelled(true);
+            explainBlocked(player);
         }
+    }
+
+    private void explainBlocked(Player player) {
+        plugin.getMessages().actionBar(player, spectators.contains(player.getUniqueId())
+                ? "game.build-blocked-spectator" : "game.build-blocked-not-started", "state", state.name());
     }
 
     /** Whether players may damage each other right now. */

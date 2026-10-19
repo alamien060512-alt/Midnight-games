@@ -22,6 +22,7 @@ general:
   player-not-found: "{prefix}<red>Player <white>{player}<red> was not found."
   unknown-mode: "{prefix}<red>Unknown game mode <white>{mode}<red>."
   not-in-game: "{prefix}<red>You are not in a game."
+  lobby-protected: "<red>Building is disabled here (you need midnight.admin.build, or set lobby.protect-blocks: false)."
   to-lobby: "{prefix}<gray>Sent you to the lobby."
 
 join:
@@ -53,6 +54,8 @@ game:
   now-spectating: "{prefix}<gray>You are now spectating <white>{arena}<gray>. Use <white>/leave<gray> to go back."
   time-up: "{prefix}<red>Time is up!"
   draw: "{prefix}<yellow>The game ended in a draw."
+  build-blocked-not-started: "<red>You cannot build now (game state: {state})."
+  build-blocked-spectator: "<red>Spectators cannot build."
   aborted: "{prefix}<red>The game was stopped by an administrator."
   winner: "{prefix}<gold><bold>Winner: <white>{winners}"
   crashed: "{prefix}<red>The game hit an error and was stopped. An admin was notified in the console."
