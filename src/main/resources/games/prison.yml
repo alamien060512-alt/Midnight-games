@@ -1,11 +1,4 @@
-# ======================================================================================
-#  Prison - games/prison.yml
-#  Setup: /minigame arena create prison main, stand at the prison spawn -> setlobby, enable.
-#  Then for every mine: select the region (/minigame pos1, pos2) and
-#  /minigame arena addmine prison main <mine> [requiredRank]
-#  Other mine commands: delmine, setminespawn, resetmine, listmines.
-# ======================================================================================
-# Ranks in order. cost = money for the rank-up, blocks = total blocks the player must have mined.
+
 ranks:
   - {id: A, name: "<gray>A", cost: 0, blocks: 0}
   - {id: B, name: "<green>B", cost: 1500, blocks: 250}
@@ -18,17 +11,16 @@ ranks:
 
 tab-rank-prefix: true
 
-# Fallback block table (weights) when a mine has no table below.
+
 default-blocks:
   STONE: 60
   COBBLESTONE: 20
   COAL_ORE: 12
   IRON_ORE: 6
   GOLD_ORE: 2
-reset-seconds: 600       # timed reset (0 = off), per mine overridable
-reset-percent: 0.25      # reset when this fraction of blocks is left (0 = off)
+reset-seconds: 600       
+reset-percent: 0.25      
 
-# Per mine overrides: icon, blocks, reset-seconds, reset-percent
 mines:
   a:
     icon: STONE_PICKAXE
@@ -43,7 +35,7 @@ mines:
     icon: DIAMOND_PICKAXE
     blocks: {STONE: 35, GOLD_ORE: 25, REDSTONE_ORE: 15, DIAMOND_ORE: 20, EMERALD_ORE: 5}
 
-# Sell values are per DROPPED item (what the block drops). multiplier-per-rank: +x per rank index.
+
 sell:
   autosell: false
   multiplier-per-rank: 0.05
