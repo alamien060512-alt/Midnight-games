@@ -1,15 +1,9 @@
-# ======================================================================================
-#  MidnightMinigames - menus.yml
-#  Every item is built from: material, name, lore, amount, enchants, glow, hide-flags, unbreakable, color, potion.
-#  Placeholders in lore: {players} {game} (main menu), {players} {queued} {game} {mode} (mode menu).
-# ======================================================================================
-
-# Items given in the hotbar. The compass opens the main menu; the leave item is given inside lobbies of round games.
+# Items given in the hotbar
 lobby-items:
   compass:
     enabled: true
     slot: 4
-    material: COMPASS
+    material: CLOCK
     name: "<gradient:#7b2ff7:#f107a3><bold>Minigames <gray>(Right Click)"
     lore:
       - "<gray>Right click to choose a game."
@@ -20,8 +14,7 @@ lobby-items:
     lore:
       - "<gray>Right click to return to the lobby."
 
-# ---- Main menu (compass) ---------------------------------------------------------------------
-# One entry per game id. Games that are disabled in config.yml are hidden (or shown as disabled-item).
+# Main Menu
 main-menu:
   title: "<gradient:#7b2ff7:#f107a3><bold>Select a Minigame"
   rows: 4
@@ -85,8 +78,8 @@ main-menu:
       name: "<light_purple><bold>SKYGEN"
       lore: ["<gray>Generators, upgrades, prestige.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to enter"]
 
-# ---- Mode menu (opened after clicking a game, or by /bw /sw ...) -------------------------------------------
-# The modes themselves are defined in config.yml -> games.<id>.modes (Duels: kits, Parkour: courses).
+# Mode menu
+
 mode-menu:
   title: "{game} <dark_gray>» <gray>Select a mode"
   rows: 3
