@@ -815,8 +815,7 @@ final class BedWarsGame extends GameInstance {
                 }
             }
         }
-        blocks.record(e.getBlockReplacedState().getBlock());
-        blocks.markPlaced(placed);
+        blocks.recordPlaced(e);
         ItemStack inHand = e.getItemInHand();
         if (ItemFactory.readTag(inHand, Keys.LUCKY) != null) {
             luckyBlocks.add(LocationUtil.pack(placed));

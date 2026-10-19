@@ -144,8 +144,7 @@ final class DuelGame extends GameInstance {
             e.setCancelled(true);
             return;
         }
-        blocks.record(e.getBlockReplacedState().getBlock());
-        blocks.markPlaced(e.getBlockPlaced());
+        blocks.recordPlaced(e);
     }
 
     @Override

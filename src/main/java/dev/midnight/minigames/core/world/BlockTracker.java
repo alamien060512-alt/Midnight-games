@@ -29,6 +29,27 @@ public final class BlockTracker {
         original.putIfAbsent(LocationUtil.pack(block), block.getBlockData());
     }
 
+    /**
+     * Records a block placement. The ORIGINAL data is taken from the replaced state (what was there before), because
+     * by the time the event fires the world already contains the new block. Multi-block placements
+     * (beds, doors, tall plants) are handled too.
+     */
+    public void recordPlaced(org.bukkit.event.block.BlockPlaceEvent e) {
+        if (e instanceof org.bukkit.event.block.BlockMultiPlaceEvent multi) {
+            for (org.bukkit.block.BlockState st : multi.getReplacedBlockStates()) {
+                recordReplaced(st);
+            }
+        } else {
+            recordReplaced(e.getBlockReplacedState());
+        }
+    }
+
+    private void recordReplaced(org.bukkit.block.BlockState replaced) {
+        long key = LocationUtil.pack(replaced.getX(), replaced.getY(), replaced.getZ());
+        original.putIfAbsent(key, replaced.getBlockData());
+        placed.add(key);
+    }
+
     public void markPlaced(Block block) {
         record(block);
         placed.add(LocationUtil.pack(block));

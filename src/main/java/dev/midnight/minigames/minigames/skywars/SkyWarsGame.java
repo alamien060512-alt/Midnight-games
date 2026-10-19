@@ -293,8 +293,7 @@ final class SkyWarsGame extends GameInstance {
     public void onBlockPlace(Player player, BlockPlaceEvent e) {
         super.onBlockPlace(player, e);
         if (!e.isCancelled()) {
-            blocks.markPlaced(e.getBlock());
-            blocks.record(e.getBlockReplacedState().getBlock());
+            blocks.recordPlaced(e);
         }
     }
 
