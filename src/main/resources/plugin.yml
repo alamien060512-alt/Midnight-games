@@ -4,6 +4,7 @@ main: dev.midnight.minigames.MidnightMinigames
 api-version: '26.3'
 authors: [Midnight]
 description: Modular all-in-one minigame framework (BedWars, SkyWars, Spleef, Prison, Skyblock, Duels, 1v1, Parkour, OneBlock, SkyGen)
+depend: [Multiverse-Core]
 softdepend: [PlaceholderAPI, Vault]
 load: POSTWORLD
 

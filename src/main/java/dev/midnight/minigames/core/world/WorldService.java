@@ -68,14 +68,31 @@ public final class WorldService {
         return null;
     }
 
+    /**
+     * Loads a world through Multiverse-Core (required dependency): first {@code mv load}, and if the world is not
+     * known to Multiverse yet {@code mv import <name> normal}. Names must not contain spaces.
+     */
     public World load(String name) {
+        if (!name.matches("[A-Za-z0-9_\\-.]+")) {
+            plugin.getLogger().severe("World name '" + name + "' is invalid for Multiverse (no spaces or special characters).");
+            return null;
+        }
         if (!worldExistsOnDisk(name)) {
             return null;
         }
         try {
-            return new WorldCreator(name).createWorld();
+            org.bukkit.command.CommandSender console = Bukkit.getConsoleSender();
+            Bukkit.dispatchCommand(console, "mv load " + name);
+            if (Bukkit.getWorld(name) == null) {
+                Bukkit.dispatchCommand(console, "mv import " + name + " normal");
+            }
+            World w = Bukkit.getWorld(name);
+            if (w == null) {
+                plugin.getLogger().severe("Multiverse could not load world '" + name + "'. Check the console output above.");
+            }
+            return w;
         } catch (Exception ex) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to load world '" + name + "': " + ex.getMessage(), ex);
+            plugin.getLogger().log(Level.SEVERE, "Failed to load world '" + name + "' via Multiverse: " + ex.getMessage(), ex);
             return null;
         }
     }

@@ -12,6 +12,7 @@ One plugin, ten built-in minigames, and a small core you can extend with your ow
 ## 1. Build
 
 ```bash
+# Multiverse-Core is a REQUIRED dependency (worlds are loaded through it)
 # JDK 25 required (Paper 26.x requires Java 25)
 mvn package
 # -> target/MidnightMinigames-1.0.0.jar   (drop into plugins/)
