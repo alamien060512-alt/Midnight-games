@@ -1,14 +1,4 @@
-# ======================================================================================
-#  Duels - games/duels.yml  (also used by 1v1)
-#  Every kit becomes a mode of /duels. Kit keys:
-#    name, material, lore, slot (menu)        - how the kit looks in the mode menu
-#    options: natural-regen, hunger, build, damage, max-hits, liquid-loses
-#    armor: helmet/chestplate/leggings/boots  - item configs
-#    items: list of item configs, optional "slot" (0-35, 40 = off-hand)
-#  Arena setup: /minigame arena setspawn duels <arena> red  and  blue, setlobby, setspectator, setplayers 2 2.
-#  Arena mode "any" (default) hosts every kit; /minigame arena setmode duels <arena> sumo restricts it to one kit.
-# ======================================================================================
-# Ranked ladder: every finished 1v1 changes both players' per-kit rating (standard ELO). /duels elo [kit], /duels top [kit].
+
 ranked:
   enabled: true
   starting: 1000
