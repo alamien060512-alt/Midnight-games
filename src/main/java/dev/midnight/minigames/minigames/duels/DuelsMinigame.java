@@ -33,6 +33,8 @@ public class DuelsMinigame extends AbstractArenaMinigame {
     private final Map<UUID, Challenge> challenges = new HashMap<>();
     private final Random random = new Random();
     private final boolean kitModes;
+    private final Map<String, List<dev.midnight.minigames.core.storage.TopEntry>> eloTop = new HashMap<>();
+    private final Map<String, Long> eloTopTime = new HashMap<>();
 
     public DuelsMinigame(MidnightMinigames plugin) {
         this(plugin, "duels", "<gold>Duels", true);
@@ -133,6 +135,56 @@ public class DuelsMinigame extends AbstractArenaMinigame {
         return problems;
     }
 
+    // ---- ranked ladder -----------------------------------------------------------------------------------
+
+    private List<dev.midnight.minigames.core.storage.TopEntry> eloTop(String kitId) {
+        long now = System.currentTimeMillis();
+        if (now - eloTopTime.getOrDefault(kitId, 0L) > 60_000L) {
+            eloTopTime.put(kitId, now);
+            plugin.getStorage().topData("elo", kitId, 10, false).whenComplete((list, ex) -> {
+                if (ex == null) {
+                    eloTop.put(kitId, list);
+                }
+            });
+        }
+        return eloTop.getOrDefault(kitId, List.of());
+    }
+
+    private long eloOf(Player p, String kitId) {
+        return plugin.getPlayerManager().getProfile(p).getLong("elo", kitId,
+                plugin.getConfigurationManager().game("duels").getInt("ranked.starting", 1000));
+    }
+
+    @Override
+    public void registerPlaceholders(dev.midnight.minigames.core.placeholder.PlaceholderRegistry registry) {
+        // %midnight_<game>_elo_<kit>%  %midnight_<game>_top_<kit>_<n>_name|elo%
+        registry.register(getId(), (player, key) -> {
+            if (key.startsWith("elo_") && player != null) {
+                return String.valueOf(eloOf(player, key.substring(4)));
+            }
+            if (key.startsWith("top_")) {
+                String[] parts = key.substring(4).split("_");
+                if (parts.length < 3) {
+                    return null;
+                }
+                try {
+                    int rank = Integer.parseInt(parts[parts.length - 2]);
+                    String field = parts[parts.length - 1];
+                    String kitId = String.join("_", java.util.Arrays.copyOfRange(parts, 0, parts.length - 2));
+                    List<dev.midnight.minigames.core.storage.TopEntry> list = eloTop(kitId);
+                    if (rank < 1 || rank > list.size()) {
+                        return "-";
+                    }
+                    var e = list.get(rank - 1);
+                    return field.equals("name") ? e.name() : String.valueOf((long) e.value());
+                } catch (NumberFormatException ex) {
+                    return null;
+                }
+            }
+            return null;
+        });
+    }
+
     // ---- direct challenges ------------------------------------------------------------------------------
 
     @Override
@@ -142,6 +194,22 @@ public class DuelsMinigame extends AbstractArenaMinigame {
         }
         var m = plugin.getMessages();
         switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "elo" -> {
+                String kitId = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : (kits.isEmpty() ? "" : kits.keySet().iterator().next());
+                m.send(player, "duels.elo", "kit", kitId, "elo", String.valueOf(eloOf(player, kitId)));
+            }
+            case "top" -> {
+                String kitId = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : (kits.isEmpty() ? "" : kits.keySet().iterator().next());
+                List<dev.midnight.minigames.core.storage.TopEntry> list = eloTop(kitId);
+                m.send(player, "duels.top-header", "kit", kitId);
+                if (list.isEmpty()) {
+                    m.send(player, "duels.top-empty");
+                }
+                int rank = 1;
+                for (var e : list) {
+                    m.send(player, "duels.top-entry", "rank", String.valueOf(rank++), "player", e.name(), "elo", String.valueOf((long) e.value()));
+                }
+            }
             case "challenge" -> {
                 if (args.length < 2) {
                     m.send(player, "duels.challenge-usage");

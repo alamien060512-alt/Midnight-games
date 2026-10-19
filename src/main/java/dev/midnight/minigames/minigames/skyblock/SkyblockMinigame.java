@@ -47,11 +47,114 @@ public final class SkyblockMinigame extends AbstractIslandMinigame {
 
     @Override
     protected boolean isExtraNeedingNoJoin(String sub) {
-        return sub.equals("upgrade") || sub.equals("upgrades");
+        return sub.equals("upgrade") || sub.equals("upgrades") || sub.equals("level") || sub.equals("top");
+    }
+
+    // ---- island level ----------------------------------------------------------------------------------
+
+    private final java.util.Set<java.util.UUID> calculating = new java.util.HashSet<>();
+
+    /**
+     * Counts the blocks inside the island's protection radius (config: level.values) and converts the points to a
+     * level. Chunk snapshots are taken on the main thread, counted asynchronously.
+     */
+    private void calculateLevel(Player player, Island is) {
+        var m = plugin.getMessages();
+        var cfg = plugin.getConfigurationManager().game("skyblock");
+        long cooldownMs = cfg.getLong("level.cooldown-seconds", 60) * 1000L;
+        long last = is.getLong("level_time", 0);
+        if (System.currentTimeMillis() - last < cooldownMs) {
+            m.send(player, "island.level-cooldown", "seconds", String.valueOf((cooldownMs - (System.currentTimeMillis() - last)) / 1000 + 1));
+            return;
+        }
+        org.bukkit.World w = is.getWorld();
+        if (w == null || !calculating.add(is.getOwner())) {
+            return;
+        }
+        is.setLong("level_time", System.currentTimeMillis());
+        final int radius = protectionRadius(is);
+        final int cx = is.getCenterX();
+        final int cz = is.getCenterZ();
+        final int minY = Math.max(w.getMinHeight(), is.getCenterY() - cfg.getInt("level.y-down", 40));
+        final int maxY = Math.min(w.getMaxHeight() - 1, is.getCenterY() + cfg.getInt("level.y-up", 100));
+        List<org.bukkit.ChunkSnapshot> snaps = new ArrayList<>();
+        for (int x = (cx - radius) >> 4; x <= (cx + radius) >> 4; x++) {
+            for (int z = (cz - radius) >> 4; z <= (cz + radius) >> 4; z++) {
+                snaps.add(w.getChunkAt(x, z).getChunkSnapshot(false, false, false));
+            }
+        }
+        final java.util.Map<org.bukkit.Material, Double> values = new java.util.HashMap<>();
+        var vs = cfg.getConfigurationSection("level.values");
+        if (vs != null) {
+            for (String k : vs.getKeys(false)) {
+                org.bukkit.Material mat = org.bukkit.Material.matchMaterial(k);
+                if (mat != null) {
+                    values.put(mat, vs.getDouble(k));
+                }
+            }
+        }
+        final double perLevel = Math.max(1, cfg.getDouble("level.points-per-level", 100));
+        m.send(player, "island.level-calculating");
+        org.bukkit.Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            double points = 0;
+            for (org.bukkit.ChunkSnapshot s : snaps) {
+                int bx = s.getX() << 4;
+                int bz = s.getZ() << 4;
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        if (Math.abs(bx + x - cx) > radius || Math.abs(bz + z - cz) > radius) {
+                            continue;
+                        }
+                        for (int y = minY; y <= maxY; y++) {
+                            Double v = values.get(s.getBlockType(x, y, z));
+                            if (v != null) {
+                                points += v;
+                            }
+                        }
+                    }
+                }
+            }
+            final double total = points;
+            org.bukkit.Bukkit.getScheduler().runTask(plugin, () -> {
+                calculating.remove(is.getOwner());
+                long level = (long) (total / perLevel);
+                is.setLong("points", (long) total);
+                is.setLong("level", level);
+                islands.markDirty();
+                Player p = org.bukkit.Bukkit.getPlayer(player.getUniqueId());
+                if (p != null) {
+                    plugin.getMessages().send(p, "island.level-result", "level", String.valueOf(level), "points", String.valueOf((long) total));
+                }
+            });
+        });
+    }
+
+    private void showTop(Player player) {
+        List<Island> sorted = new ArrayList<>(islands.all());
+        sorted.sort((a, b) -> Long.compare(b.getLong("level", 0), a.getLong("level", 0)));
+        plugin.getMessages().send(player, "island.top-header");
+        for (int i = 0; i < Math.min(10, sorted.size()); i++) {
+            Island is = sorted.get(i);
+            plugin.getMessages().send(player, "island.top-entry", "rank", String.valueOf(i + 1), "owner", nameOf(is.getOwner()),
+                    "level", String.valueOf(is.getLong("level", 0)));
+        }
     }
 
     @Override
     protected boolean handleExtraCommand(Player player, String sub, String[] args) {
+        if (sub.equals("level")) {
+            Island own = islands.of(player.getUniqueId());
+            if (own == null) {
+                plugin.getMessages().send(player, "island.no-island", "command", "/skyblock create");
+            } else {
+                calculateLevel(player, own);
+            }
+            return true;
+        }
+        if (sub.equals("top")) {
+            showTop(player);
+            return true;
+        }
         if (sub.equals("upgrade") || sub.equals("upgrades")) {
             Island is = islands.of(player.getUniqueId());
             if (is == null) {
@@ -84,6 +187,7 @@ public final class SkyblockMinigame extends AbstractIslandMinigame {
         }
         island.getUpgrades().put(upgradeId, level + 1);
         islands.markDirty();
+        updateBorder(player);
         m.send(player, "island.upgraded", "upgrade", upgradeId, "level", String.valueOf(level + 2));
         plugin.getEffects().play(player, "shop-buy");
         return true;
@@ -94,6 +198,7 @@ public final class SkyblockMinigame extends AbstractIslandMinigame {
         Map<String, String> v = super.getScoreboardVariables(player);
         Island is = islands.of(player.getUniqueId());
         v.put("size_level", is == null ? "-" : String.valueOf(is.getUpgrade("size") + 1));
+        v.put("island_level", is == null ? "0" : String.valueOf(is.getLong("level", 0)));
         return v;
     }
 
@@ -107,6 +212,7 @@ public final class SkyblockMinigame extends AbstractIslandMinigame {
             return switch (key) {
                 case "radius" -> getScoreboardVariables(player).get("island_radius");
                 case "members" -> getScoreboardVariables(player).get("island_members");
+                case "level" -> getScoreboardVariables(player).get("island_level");
                 default -> null;
             };
         });

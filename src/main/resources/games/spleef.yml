@@ -17,3 +17,6 @@ tool:
   name: "<aqua>Spleef Shovel"
   unbreakable: true
   enchants: {efficiency: 5}
+
+# Snowballs given every round (0 = none). A mode can override with "snowballs: n" (the 'snowball' mode does).
+snowballs: 0

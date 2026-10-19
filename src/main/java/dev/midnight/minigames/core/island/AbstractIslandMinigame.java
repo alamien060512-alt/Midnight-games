@@ -129,6 +129,12 @@ public abstract class AbstractIslandMinigame extends AbstractPersistentMinigame 
         if (islands.of(player.getUniqueId()) == null) {
             plugin.getMessages().send(player, "island.no-island", "command", "/" + getId() + " create");
         }
+        updateBorder(player);
+    }
+
+    @Override
+    protected void onExit(Player player) {
+        player.setWorldBorder(null);
     }
 
     @Override
@@ -138,6 +144,27 @@ public abstract class AbstractIslandMinigame extends AbstractPersistentMinigame 
         if (l != null) {
             victim.teleport(l);
         }
+    }
+
+    // ---- island border (visual only, per player) ---------------------------------------------------------
+
+    /** Shows the island's build area as a client-side world border while the player is on their island. */
+    protected void updateBorder(Player p) {
+        if (!plugin.getConfigurationManager().game(getId()).getBoolean("island.show-border", false)) {
+            return;
+        }
+        Island is = islands.of(p.getUniqueId());
+        if (is == null || !is.contains(p.getLocation(), protectionRadius(is))) {
+            p.setWorldBorder(null);
+            return;
+        }
+        org.bukkit.WorldBorder b = Bukkit.createWorldBorder();
+        b.setCenter(is.getCenterX() + 0.5, is.getCenterZ() + 0.5);
+        b.setSize(protectionRadius(is) * 2 + 1);
+        b.setDamageAmount(0);
+        b.setDamageBuffer(0);
+        b.setWarningDistance(0);
+        p.setWorldBorder(b);
     }
 
     // ---- protection -------------------------------------------------------------------------------------------------
@@ -206,6 +233,7 @@ public abstract class AbstractIslandMinigame extends AbstractPersistentMinigame 
                         m.send(player, "island.world-missing", "world", is.getWorldName());
                     } else {
                         player.teleport(home);
+                        updateBorder(player);
                         m.send(player, "island.teleported");
                     }
                 }
@@ -216,6 +244,7 @@ public abstract class AbstractIslandMinigame extends AbstractPersistentMinigame 
                 } else {
                     is.setHomeRaw(LocationUtil.serialize(player.getLocation()));
                     islands.markDirty();
+                    updateBorder(player);
                     m.send(player, "island.home-set");
                 }
             }
@@ -255,6 +284,7 @@ public abstract class AbstractIslandMinigame extends AbstractPersistentMinigame 
                     Location home = islands.homeOf(target);
                     if (home != null) {
                         player.teleport(home);
+                        updateBorder(player);
                     }
                 }
             }
@@ -270,6 +300,7 @@ public abstract class AbstractIslandMinigame extends AbstractPersistentMinigame 
                     if (a != null && a.getLobby() != null) {
                         player.teleport(a.getLobby());
                     }
+                    updateBorder(player);
                 }
             }
             case "kick" -> {
@@ -295,6 +326,7 @@ public abstract class AbstractIslandMinigame extends AbstractPersistentMinigame 
                         if (inside.contains(victim) && a != null && a.getLobby() != null) {
                             vp.teleport(a.getLobby());
                         }
+                        vp.setWorldBorder(null);
                     }
                 }
             }
@@ -362,6 +394,7 @@ public abstract class AbstractIslandMinigame extends AbstractPersistentMinigame 
         Location home = islands.homeOf(is);
         if (home != null) {
             player.teleport(home);
+            updateBorder(player);
         }
         m.send(player, "island.created");
         plugin.getEffects().play(player, "win");
@@ -389,6 +422,7 @@ public abstract class AbstractIslandMinigame extends AbstractPersistentMinigame 
             for (Player p : w.getPlayers()) {
                 if (is.isMember(p.getUniqueId()) && inside.contains(p.getUniqueId()) && hub != null && hub.getLobby() != null) {
                     p.teleport(hub.getLobby());
+                    p.setWorldBorder(null);
                 }
             }
             YamlConfiguration cfg = plugin.getConfigurationManager().game(getId());

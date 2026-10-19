@@ -42,6 +42,7 @@ final class SpleefGame extends GameInstance {
     private final int totalRounds;
     private final int intermissionSeconds;
     private final int fallDepth;
+    private final int snowballs;
 
     private int round;
     private boolean roundActive;
@@ -57,6 +58,7 @@ final class SpleefGame extends GameInstance {
         this.totalRounds = Math.max(1, mode.getRaw().getInt("rounds", cfg.getInt("rounds", 3)));
         this.intermissionSeconds = Math.max(1, cfg.getInt("round-intermission", 5));
         this.fallDepth = Math.max(1, cfg.getInt("floor.fall-depth", 3));
+        this.snowballs = Math.max(0, mode.getRaw().getInt("snowballs", cfg.getInt("snowballs", 0)));
     }
 
     private WeightedTable<Material> floorTable() {
@@ -111,6 +113,9 @@ final class SpleefGame extends GameInstance {
             Location spawn = spawns.isEmpty() ? randomOnFloor() : spawns.get(i++ % spawns.size());
             p.teleport(spawn);
             p.getInventory().addItem(tool.clone());
+            if (snowballs > 0) {
+                p.getInventory().addItem(new ItemStack(Material.SNOWBALL, snowballs));
+            }
             plugin.getScoreboardService().refresh(p);
         }
         roundActive = true;
@@ -263,6 +268,19 @@ final class SpleefGame extends GameInstance {
         }
         e.setDropItems(false);
         e.setExpToDrop(0);
+    }
+
+    /** Snowball spleef: a snowball that hits the floor removes the block it hit. */
+    @Override
+    public void onProjectileHit(Player shooter, org.bukkit.event.entity.ProjectileHitEvent e) {
+        if (!roundActive || !(e.getEntity() instanceof org.bukkit.entity.Snowball) || e.getHitBlock() == null) {
+            return;
+        }
+        if (players.contains(shooter.getUniqueId()) && !roundDead.contains(shooter.getUniqueId())
+                && floor.contains(e.getHitBlock().getLocation())) {
+            e.getHitBlock().setType(Material.AIR, false);
+            e.getEntity().remove();
+        }
     }
 
     @Override

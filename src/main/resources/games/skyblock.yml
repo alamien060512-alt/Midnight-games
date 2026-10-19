@@ -10,6 +10,7 @@ island:
   center-y: 64
   protection-radius: 50   # fallback when "upgrades.size" has no tiers
   member-limit: 3         # fallback total players per island
+  show-border: true       # shows the build area as a client-side border while on your island
   clear-on-delete: true
   clear-radius: 40
   clear-down: 20
@@ -68,3 +69,24 @@ upgrades:
 
 upgrades-menu:
   title: "<dark_gray>Island Upgrades"
+
+# Island level: /skyblock level counts the blocks inside the protection radius and converts the points to a level.
+# /skyblock top lists the best islands. Values are points per block (missing blocks are worth 0).
+level:
+  points-per-level: 100
+  cooldown-seconds: 60
+  y-down: 40
+  y-up: 100
+  values:
+    DIRT: 0.1
+    GRASS_BLOCK: 0.2
+    COBBLESTONE: 0.2
+    STONE: 0.3
+    OAK_LOG: 0.5
+    SAND: 0.2
+    IRON_BLOCK: 10
+    GOLD_BLOCK: 20
+    DIAMOND_BLOCK: 50
+    EMERALD_BLOCK: 80
+    BEACON: 150
+    NETHERITE_BLOCK: 300

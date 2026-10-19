@@ -158,8 +158,47 @@ final class DuelGame extends GameInstance {
         }
     }
 
+    private final Map<UUID, Integer> eloDelta = new HashMap<>();
+
+    /** Standard ELO between the two duellists. Only when both are still online (otherwise the result is not rated). */
+    private void rate(List<UUID> winners) {
+        var cfg = plugin.getConfigurationManager().game("duels");
+        if (!cfg.getBoolean("ranked.enabled", true) || winners.size() != 1 || participants.size() != 2) {
+            return;
+        }
+        UUID winId = winners.get(0);
+        UUID loseId = null;
+        for (UUID id : participants) {
+            if (!id.equals(winId)) {
+                loseId = id;
+            }
+        }
+        Player w = Bukkit.getPlayer(winId);
+        Player l = loseId == null ? null : Bukkit.getPlayer(loseId);
+        if (w == null || l == null) {
+            return;
+        }
+        int start = cfg.getInt("ranked.starting", 1000);
+        double k = cfg.getDouble("ranked.k-factor", 32);
+        var wp = plugin.getPlayerManager().getProfile(w);
+        var lp = plugin.getPlayerManager().getProfile(l);
+        long rw = wp.getLong("elo", kit.getId(), start);
+        long rl = lp.getLong("elo", kit.getId(), start);
+        double expected = 1.0 / (1.0 + Math.pow(10, (rl - rw) / 400.0));
+        int delta = (int) Math.max(1, Math.round(k * (1.0 - expected)));
+        long nw = rw + delta;
+        long nl = Math.max(0, rl - delta);
+        wp.setLong("elo", kit.getId(), nw);
+        lp.setLong("elo", kit.getId(), nl);
+        eloDelta.put(winId, delta);
+        eloDelta.put(loseId, -delta);
+        plugin.getMessages().send(w, "duels.elo-change", "kit", kit.getDisplayName(), "old", String.valueOf(rw), "new", String.valueOf(nw), "delta", "+" + delta);
+        plugin.getMessages().send(l, "duels.elo-change", "kit", kit.getDisplayName(), "old", String.valueOf(rl), "new", String.valueOf(nl), "delta", "-" + delta);
+    }
+
     @Override
     protected void onGameEnd(List<UUID> winners) {
+        rate(winners);
         for (UUID id : participants) {
             Player p = Bukkit.getPlayer(id);
             if (p != null) {
@@ -177,6 +216,8 @@ final class DuelGame extends GameInstance {
         v.put("hits", String.valueOf(hits.getOrDefault(player.getUniqueId(), 0)));
         v.put("opponent_hits", opp == null ? "0" : String.valueOf(hits.getOrDefault(opp.getUniqueId(), 0)));
         v.put("max_hits", String.valueOf(kit.maxHits()));
+        v.put("elo", String.valueOf(plugin.getPlayerManager().getProfile(player).getLong("elo", kit.getId(),
+                plugin.getConfigurationManager().game("duels").getInt("ranked.starting", 1000))));
         return v;
     }
 }

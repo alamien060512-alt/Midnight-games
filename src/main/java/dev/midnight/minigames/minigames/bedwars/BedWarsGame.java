@@ -86,6 +86,8 @@ final class BedWarsGame extends GameInstance {
     private final Map<UUID, Integer> respawning = new HashMap<>();
     private final Map<UUID, Integer> invulnerableUntil = new HashMap<>();
     private final Map<UUID, Integer> armorTier = new HashMap<>();
+    /** player -> ("pickaxe"|"axe" -> tier). Tools are kept across respawns but drop one tier on death. */
+    private final Map<UUID, Map<String, Integer>> toolTier = new HashMap<>();
     private final Set<Long> luckyBlocks = new HashSet<>();
     private final List<ConfigurationSection> events;
     private final List<String> armorMaterials;
@@ -290,6 +292,7 @@ final class BedWarsGame extends GameInstance {
             p.getInventory().addItem(applyTeamEnchants(stack, team));
         }
         applyTeamEffects(p, team);
+        giveTools(p, team);
     }
 
     private void equipArmor(Player p, GameTeam team) {
@@ -441,7 +444,24 @@ final class BedWarsGame extends GameInstance {
             return false;
         }
         String type = entry.getString("type", "item");
-        if (type.equals("armor")) {
+        if (type.equals("tool")) {
+            String tool = entry.getString("tool", "pickaxe");
+            int tier = entry.getInt("tier", 1);
+            int owned = toolTier.computeIfAbsent(p.getUniqueId(), k -> new HashMap<>()).getOrDefault(tool, 0);
+            if (tier <= owned) {
+                plugin.getMessages().send(p, "bedwars.already-owned");
+                plugin.getEffects().play(p, "shop-fail");
+                return false;
+            }
+            if (tier > owned + 1) {
+                plugin.getMessages().send(p, "bedwars.tool-previous-tier");
+                plugin.getEffects().play(p, "shop-fail");
+                return false;
+            }
+            take(p, resMat, amount);
+            toolTier.get(p.getUniqueId()).put(tool, tier);
+            giveTools(p, team);
+        } else if (type.equals("armor")) {
             int tier = entry.getInt("tier", 1);
             if (armorTier.getOrDefault(p.getUniqueId(), 0) >= tier) {
                 plugin.getMessages().send(p, "bedwars.already-owned");
@@ -472,6 +492,52 @@ final class BedWarsGame extends GameInstance {
         plugin.getEffects().play(p, "shop-buy");
         plugin.getMessages().send(p, "bedwars.purchased", "item", TextUtil.plain(TextUtil.parse(entry.getString("name", entry.getString("id", "item")))));
         return true;
+    }
+
+    /** Shop entry for a tool tier (games/bedwars.yml: type: tool, tool: pickaxe|axe, tier: n). */
+    private ConfigurationSection toolEntry(String tool, int tier) {
+        for (ConfigurationSection cat : ConfigUtil.sections(cfg, "shop.categories")) {
+            for (ConfigurationSection item : ConfigUtil.sections(cat, "items")) {
+                if ("tool".equals(item.getString("type")) && tool.equals(item.getString("tool")) && item.getInt("tier") == tier) {
+                    return item;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Replaces the player's pickaxe/axe items with the ones matching their current tools tier. */
+    private void giveTools(Player p, GameTeam team) {
+        Map<String, Integer> tiers = toolTier.get(p.getUniqueId());
+        if (tiers == null) {
+            return;
+        }
+        for (Map.Entry<String, Integer> e : tiers.entrySet()) {
+            String suffix = e.getKey().equals("axe") ? "_AXE" : "_PICKAXE";
+            ItemStack[] contents = p.getInventory().getContents();
+            for (int i = 0; i < contents.length; i++) {
+                if (contents[i] != null && contents[i].getType().name().endsWith(suffix)) {
+                    p.getInventory().setItem(i, null);
+                }
+            }
+            ConfigurationSection entry = e.getValue() > 0 ? toolEntry(e.getKey(), e.getValue()) : null;
+            if (entry != null) {
+                ConfigurationSection plain = new MemoryConfiguration();
+                for (String k : entry.getKeys(false)) {
+                    if (!List.of("name", "lore", "cost", "type", "slot", "id", "tier", "tool").contains(k)) {
+                        plain.set(k, entry.get(k));
+                    }
+                }
+                p.getInventory().addItem(applyTeamEnchants(ItemFactory.build(plain, "color", team.getColor().getDye()), team));
+            }
+        }
+    }
+
+    private void downgradeTools(Player p) {
+        Map<String, Integer> tiers = toolTier.get(p.getUniqueId());
+        if (tiers != null) {
+            tiers.replaceAll((k, v) -> Math.max(1, v - 1));
+        }
     }
 
     boolean buyUpgrade(Player p, ConfigurationSection def) {
@@ -707,6 +773,7 @@ final class BedWarsGame extends GameInstance {
         boolean voidDeath = cause == EntityDamageEvent.DamageCause.VOID;
         if (st != null && st.bedAlive) {
             plugin.getPlayerManager().addDeath(victim, minigame.getId());
+            downgradeTools(victim);
             if (killer != null && killer != victim) {
                 kills.merge(killer.getUniqueId(), 1, Integer::sum);
                 plugin.getPlayerManager().addKill(killer, minigame.getId());

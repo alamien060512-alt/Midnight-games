@@ -231,6 +231,7 @@ bedwars:
     diamond: "<aqua>Diamond"
     emerald: "<green>Emerald"
   not-enough: "{prefix}<red>You do not have enough {resource}<red>."
+  tool-previous-tier: "{prefix}<red>Buy the previous tier of this tool first."
   already-owned: "{prefix}<red>You already own that."
   purchased: "{prefix}<green>Purchased <white>{item}<green>."
   hologram:
@@ -266,6 +267,7 @@ skywars:
   chests-scanned: "{prefix}<green>Found <white>{found}<green> container(s) in your selection (<white>{count}<green> registered)."
   chests-cleared: "{prefix}<green>All chests unregistered."
   refill: "{prefix}<yellow>All chests have been refilled!"
+  border-shrinking: "{prefix}<red><bold>The border is shrinking! <reset><gray>Move to the centre."
   go: "{prefix}<green>Grace period over - the fight begins soon!"
 
 spleef:
@@ -280,6 +282,11 @@ duels:
   challenge-received: "{prefix}<yellow>{player} challenged you to a <white>{kit}<yellow> duel! Type <white>/duels accept<yellow>."
   busy: "{prefix}<red>One of you is already in a game."
   no-challenge: "{prefix}<red>You have no pending challenge."
+  elo-change: "{prefix}<gray>Rating ({kit}<gray>): <white>{old} <gray>-> <white>{new} <dark_gray>(<yellow>{delta}<dark_gray>)"
+  elo: "{prefix}<gray>Your {kit} rating: <white>{elo}"
+  top-header: "{prefix}<yellow>Top ratings for <white>{kit}<yellow>:"
+  top-empty: "<gray>No rated games yet (the list refreshes every minute)."
+  top-entry: "<gray>#{rank} <white>{player} <dark_gray>- <yellow>{elo}"
   kit-info: "{prefix}<gray>Kit: {kit}"
   start: "{prefix}<green>Duel started! Kit: {kit}<green> - opponent: <white>{opponent}"
 
@@ -352,6 +359,11 @@ island:
     - "{prefix}<yellow>Island of <white>{owner}"
     - "<gray>Members: <white>{members} <dark_gray>(limit {limit})"
     - "<gray>Protection radius: <white>{radius}"
+  level-calculating: "{prefix}<gray>Counting your island's blocks..."
+  level-cooldown: "{prefix}<red>You can recalculate your island level in {seconds}s."
+  level-result: "{prefix}<green>Island level: <white>{level} <gray>({points} points)"
+  top-header: "{prefix}<yellow>Top islands:"
+  top-entry: "<gray>#{rank} <white>{owner} <dark_gray>- <yellow>level {level}"
   upgrade-maxed: "<green>Maximum level reached"
   upgrade-next: "<gray>Next: <white>{value} <gray>for <gold>${cost}"
   upgrade-cost: "{prefix}<red>That costs <white>${cost}<red>."

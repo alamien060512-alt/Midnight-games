@@ -19,6 +19,8 @@ import org.bukkit.block.Container;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.Bukkit;
+import org.bukkit.WorldBorder;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -54,6 +56,10 @@ final class SkyWarsGame extends GameInstance {
     private final List<Integer> refillTimes;
     private int nextRefill = 0;
     private final boolean lucky;
+    private final List<org.bukkit.block.Block> cageBlocks = new ArrayList<>();
+    private boolean cagesReleased;
+    private WorldBorder border;
+    private boolean shrinking;
 
     SkyWarsGame(MidnightMinigames plugin, AbstractArenaMinigame minigame, Arena arena, ModeDefinition mode) {
         super(plugin, minigame, arena, mode);
@@ -132,13 +138,128 @@ final class SkyWarsGame extends GameInstance {
                 p.teleport(spawns.get(i++ % spawns.size()));
             }
         }
+        buildCages(online);
+        setupBorder(online);
         for (Player p : online) {
             plugin.getTabService().update(p);
         }
     }
 
+    // ---- cages -----------------------------------------------------------------------------------------
+
+    private void buildCages(List<Player> online) {
+        cageBlocks.clear();
+        cagesReleased = !cfg.getBoolean("cages.enabled", true);
+        if (cagesReleased) {
+            return;
+        }
+        Material mat = dev.midnight.minigames.util.ItemFactory.material(cfg.getString("cages.material", "GLASS"), Material.GLASS);
+        Set<Long> done = new HashSet<>();
+        for (Player p : online) {
+            Block feet = p.getLocation().getBlock();
+            if (!done.add(LocationUtil.pack(feet))) {
+                continue; // team members share one cage
+            }
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    for (int dy = -1; dy <= 2; dy++) {
+                        if (dx == 0 && dz == 0 && dy >= 0 && dy <= 1) {
+                            continue; // the player's own space
+                        }
+                        Block b = feet.getRelative(dx, dy, dz);
+                        if (placeTracked(b, mat)) {
+                            cageBlocks.add(b);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void releaseCages() {
+        cagesReleased = true;
+        for (Block b : cageBlocks) {
+            b.setType(Material.AIR, false);
+            blocks.unmarkPlaced(b);
+        }
+        cageBlocks.clear();
+    }
+
+    // ---- world border shrink (per-player border, so several arenas can share one world) ----------------------
+
+    private void setupBorder(List<Player> online) {
+        if (!cfg.getBoolean("border.enabled", true) || online.isEmpty()) {
+            return;
+        }
+        dev.midnight.minigames.util.Cuboid bounds = arena.getRegion("bounds");
+        double cx;
+        double cz;
+        double size = cfg.getDouble("border.start-size", 0);
+        if (bounds != null) {
+            cx = (bounds.minX + bounds.maxX + 1) / 2.0;
+            cz = (bounds.minZ + bounds.maxZ + 1) / 2.0;
+            if (size <= 0) {
+                size = Math.max(bounds.maxX - bounds.minX, bounds.maxZ - bounds.minZ) + 10;
+            }
+        } else {
+            double sx = 0;
+            double sz = 0;
+            int n = 0;
+            for (Player p : online) {
+                sx += p.getLocation().getX();
+                sz += p.getLocation().getZ();
+                n++;
+            }
+            cx = sx / n;
+            cz = sz / n;
+            if (size <= 0) {
+                size = 150;
+            }
+        }
+        border = Bukkit.createWorldBorder();
+        border.setCenter(cx, cz);
+        border.setSize(size);
+        border.setDamageAmount(cfg.getDouble("border.damage", 1.0));
+        border.setDamageBuffer(0);
+        border.setWarningDistance(5);
+        shrinking = false;
+        for (Player p : online) {
+            p.setWorldBorder(border);
+        }
+    }
+
+    private void tickBorder() {
+        if (border == null || shrinking || elapsed < cfg.getInt("border.start-after", 240)) {
+            return;
+        }
+        shrinking = true;
+        border.setSize(Math.max(5, cfg.getDouble("border.end-size", 20)), Math.max(10, cfg.getInt("border.shrink-seconds", 240)));
+        for (Player p : online(getPlayerIds())) {
+            p.setWorldBorder(border);
+        }
+        broadcast("skywars.border-shrinking");
+        sound("event");
+    }
+
+    @Override
+    protected void onPlayerRemoved(Player player) {
+        player.setWorldBorder(null);
+    }
+
+    @Override
+    protected void onCleanup() {
+        for (Player p : getOnlineOccupants()) {
+            p.setWorldBorder(null);
+        }
+        border = null;
+    }
+
     @Override
     protected void onTick() {
+        if (!cagesReleased && elapsed >= freezeSeconds) {
+            releaseCages();
+        }
+        tickBorder();
         if (nextRefill < refillTimes.size() && elapsed >= refillTimes.get(nextRefill)) {
             nextRefill++;
             filled.clear();
@@ -300,6 +421,7 @@ final class SkyWarsGame extends GameInstance {
     @Override
     public Map<String, String> getScoreboardVariables(Player player) {
         Map<String, String> v = super.getScoreboardVariables(player);
+        v.put("border", border == null ? "-" : String.valueOf((int) border.getSize()));
         v.put("refill", nextRefill < refillTimes.size() ? dev.midnight.minigames.util.TextUtil.formatTime(refillTimes.get(nextRefill) - elapsed) : "-");
         return v;
     }

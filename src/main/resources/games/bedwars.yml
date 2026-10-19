@@ -113,10 +113,14 @@ shop:
       name: "<yellow>Tools"
       items:
         - {id: shears, material: SHEARS, unbreakable: true, cost: {iron: 20}, name: "<white>Shears"}
-        - {id: wood-pick, material: WOODEN_PICKAXE, unbreakable: true, enchants: {efficiency: 1}, cost: {iron: 10}, name: "<white>Wooden Pickaxe"}
-        - {id: iron-pick, material: IRON_PICKAXE, unbreakable: true, enchants: {efficiency: 2}, cost: {gold: 3}, name: "<white>Iron Pickaxe"}
-        - {id: diamond-pick, material: DIAMOND_PICKAXE, unbreakable: true, enchants: {efficiency: 3}, cost: {gold: 6}, name: "<white>Diamond Pickaxe"}
-        - {id: axe, material: IRON_AXE, unbreakable: true, enchants: {efficiency: 2}, cost: {gold: 3}, name: "<white>Axe"}
+        - {id: wood-pick, material: WOODEN_PICKAXE, type: tool, tool: pickaxe, tier: 1, unbreakable: true, enchants: {efficiency: 1}, cost: {iron: 10}, name: "<white>Wooden Pickaxe", lore: ["<gray>Tier 1. Lose one tier when you die."]}
+        - {id: iron-pick, material: IRON_PICKAXE, type: tool, tool: pickaxe, tier: 2, unbreakable: true, enchants: {efficiency: 2}, cost: {gold: 3}, name: "<white>Iron Pickaxe", lore: ["<gray>Tier 2."]}
+        - {id: gold-pick, material: GOLDEN_PICKAXE, type: tool, tool: pickaxe, tier: 3, unbreakable: true, enchants: {efficiency: 3}, cost: {gold: 3}, name: "<white>Golden Pickaxe", lore: ["<gray>Tier 3."]}
+        - {id: diamond-pick, material: DIAMOND_PICKAXE, type: tool, tool: pickaxe, tier: 4, unbreakable: true, enchants: {efficiency: 3}, cost: {gold: 6}, name: "<white>Diamond Pickaxe", lore: ["<gray>Tier 4."]}
+        - {id: wood-axe, material: WOODEN_AXE, type: tool, tool: axe, tier: 1, unbreakable: true, enchants: {efficiency: 1}, cost: {iron: 10}, name: "<white>Wooden Axe", lore: ["<gray>Tier 1. Lose one tier when you die."]}
+        - {id: stone-axe, material: STONE_AXE, type: tool, tool: axe, tier: 2, unbreakable: true, enchants: {efficiency: 1}, cost: {iron: 10}, name: "<white>Stone Axe", lore: ["<gray>Tier 2."]}
+        - {id: iron-axe, material: IRON_AXE, type: tool, tool: axe, tier: 3, unbreakable: true, enchants: {efficiency: 2}, cost: {gold: 3}, name: "<white>Iron Axe", lore: ["<gray>Tier 3."]}
+        - {id: diamond-axe, material: DIAMOND_AXE, type: tool, tool: axe, tier: 4, unbreakable: true, enchants: {efficiency: 3}, cost: {gold: 6}, name: "<white>Diamond Axe", lore: ["<gray>Tier 4."]}
     - id: ranged
       slot: 4
       material: BOW

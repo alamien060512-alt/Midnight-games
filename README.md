@@ -152,10 +152,11 @@ that sit close together, also mark each arena's area so explosions and cleanup s
 | `/party create`, `invite <player>`, `accept`, `leave`, `disband`, `kick <player>`, `list` | parties (only the leader queues, the party joins together and stays on one team when the team size allows) |
 | `/spectate <player>` | spectate a running game that supports spectators |
 | `/duels challenge <player> [kit]`, `/duels accept` | direct duel on a free arena |
+| `/duels elo [kit]`, `/duels top [kit]` (also `/1v1`) | ranked rating and leaderboard |
 | `/parkour reset`, `checkpoint`, `top [course]`, `best [course]`, `list` | parkour helpers |
 | `/prison rankup [max]`, `sell`, `mines`, `rank`, `ranks` | prison |
 | `/skyblock` / `/oneblock` / `/skygen` `create`, `home`, `sethome`, `invite <p>`, `accept`, `kick <p>`, `leave`, `delete [confirm]`, `info` | islands |
-| `/skyblock upgrades` · `/oneblock phase`, `reset [confirm]` · `/skygen shop`, `upgrades`, `prestige [confirm]`, `stats` | game specific |
+| `/skyblock upgrades`, `level`, `top` · `/oneblock phase`, `reset [confirm]` · `/skygen shop`, `upgrades`, `prestige [confirm]`, `stats` | game specific |
 
 ### Admin commands (`/minigame`, aliases `/mg`, `/minigames`, `/midnight`)
 ```
@@ -322,7 +323,8 @@ The expansion registers automatically if PlaceholderAPI is installed; otherwise 
 | `%midnight_bedwars_beds%` | beds destroyed |
 | `%midnight_parkour_time%` `_course` `_checkpoint` `_best_<course>` `_top_<course>_<n>_name` / `_time` | parkour |
 | `%midnight_prison_rank%` `_mined` `_balance` `_next_rank` `_next_cost` | prison |
-| `%midnight_skyblock_radius%` `_members` | skyblock |
+| `%midnight_skyblock_radius%` `_members` `_level` | skyblock |
+| `%midnight_duels_elo_<kit>%` `%midnight_duels_top_<kit>_<n>_name%` `_elo` (also `1v1`) | ranked ladder |
 | `%midnight_oneblock_blocks%` `_phase` `_next_phase_in` | oneblock |
 | `%midnight_skygen_rank%` `_prestige` `_multiplier` `_generators` `_speed` | skygen |
 
@@ -378,24 +380,30 @@ Events (Bukkit events, main thread): `MinigameJoinEvent` (cancellable), `Minigam
 
 ---------------------------------------------------------------------------------------------------
 
-## 12. Known limitations / TODO (nothing here is faked – these are simply not implemented)
+## 12. Newer features and known limitations
 
-* **BedWars**: tool-tier downgrades only.
-  quick-buy, Beds are only protected from explosions because they are not player-placed.
-* **SkyWars**: no cages (players are frozen for `freeze-seconds` instead), no border shrink / deathmatch phase.
-* **Spleef**: shovel only (snowball/TNT spleef not implemented).
-* **Duels**: no ELO / ranked ladder; stats are plain win/loss per kit.
-* **Skyblock**: no per-player world-border display, no island levels/leaderboard, no biomes; protection covers
-  break/place/containers only (not buckets, entities or pistons crossing the border).
+Added after the first version (all untested on a live server): BedWars **traps** (It's a Trap, Counter-Offensive, Alarm,
+Miner Fatigue; queue of 3, costs in `games/bedwars.yml`), **bridge egg**, **pop-up tower**, **magic milk**, **dream
+defender** golems, **quick-buy** (shift-click any shop item to favourite it), **pickaxe/axe tiers** that drop one tier on
+death, and **floating generator timers**. SkyWars **glass cages** and a **shrinking border** (per-player border, so
+arenas can share a world). **Snowball spleef** mode. A **ranked ELO ladder** for Duels and 1v1 (`/duels elo`,
+`/duels top`). Skyblock **island levels** (`/skyblock level`, `/skyblock top`) and a visual **island border**.
+
+What is still not implemented:
+
+* **BedWars**: block-placement limits by height, tool *selling*, spectator compass, team chat.
+* **SkyWars**: no deathmatch phase besides the shrinking border.
+* **Skyblock**: no biomes; protection covers break/place/containers only (not buckets, entities or pistons crossing the border).
 * **OneBlock / SkyGen**: islands are never recycled (grid cells are not reused after deletion); deletion clears a
   configurable radius, not the whole cell.
-* **Block restore** (default reset mode) does not restore tile-entity contents or fluids that flowed; use `world-copy`
-  for maps where that matters.
+* **Block restore** (default reset mode) does not restore tile-entity contents; liquids, fire, TNT and falling blocks
+  are tracked. Use `world-copy` for maps where that matters.
 * Player snapshots (inventory/location restored when leaving round games) are in memory only: a server crash while
   players are inside a round game loses their pre-game inventory. Persistent games never touch inventories.
 * MySQL support is implemented with plain JDBC (one reconnecting connection on the storage thread, no pool) and is
   untested; SQLite is the default and the tested path.
 * Only one OneBlock/SkyGen/Skyblock hub arena is used (the first enabled arena of the game).
+* Nothing here has run on a live Paper server yet. Report problems with the exact console output.
 
 ---------------------------------------------------------------------------------------------------
 

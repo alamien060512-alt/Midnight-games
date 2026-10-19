@@ -440,6 +440,20 @@ games:
           - ""
           - "<white>Playing: <green>{players}"
           - "<yellow>Click to play!"
+      snowball:
+        name: "<white><bold>Snowball Spleef"
+        material: SNOWBALL
+        slot: 13
+        rounds: 3
+        snowballs: 16
+        min-players: 2
+        max-players: 12
+        lore:
+          - "<gray>Throw snowballs to remove blocks"
+          - "<gray>from far away. 16 per round."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<yellow>Click to play!"
       marathon:
         name: "<gold><bold>Marathon"
         material: DIAMOND_SHOVEL

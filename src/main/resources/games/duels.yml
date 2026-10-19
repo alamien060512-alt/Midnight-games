@@ -8,6 +8,12 @@
 #  Arena setup: /minigame arena setspawn duels <arena> red  and  blue, setlobby, setspectator, setplayers 2 2.
 #  Arena mode "any" (default) hosts every kit; /minigame arena setmode duels <arena> sumo restricts it to one kit.
 # ======================================================================================
+# Ranked ladder: every finished 1v1 changes both players' per-kit rating (standard ELO). /duels elo [kit], /duels top [kit].
+ranked:
+  enabled: true
+  starting: 1000
+  k-factor: 32
+
 kits:
   nodebuff:
     name: "<red>NoDebuff"

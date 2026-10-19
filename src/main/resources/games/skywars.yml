@@ -7,6 +7,21 @@ freeze-seconds: 5       # players cannot move right after the start (cage replac
 grace-seconds: 10       # no PvP for this long after the freeze
 refill-times: [180, 360]  # seconds after start when all chests refill
 
+# Glass cages around every spawn until the freeze ends (they are removed automatically, also on reset).
+cages:
+  enabled: true
+  material: GLASS
+
+# Shrinking border (a per-player border, so several arenas can share one world). Centre = arena "bounds" region
+# (or the average spawn position). start-size 0 = automatic.
+border:
+  enabled: true
+  start-size: 0
+  end-size: 20
+  start-after: 240       # seconds after the start
+  shrink-seconds: 240
+  damage: 1.0
+
 lucky:
   block: SPONGE
 
