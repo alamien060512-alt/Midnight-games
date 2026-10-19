@@ -1,0 +1,121 @@
+# ======================================================================================
+#  SkyGen - games/skygen.yml
+#  Setup is the same as Skyblock (void world, arena "main", hub spawn, enable).
+#  Commands: /skygen create|home|..., shop, upgrades, prestige [confirm], stats
+#  Generator blocks (bought in /skygen shop) produce a block above themselves; mining it pays "values" x multiplier.
+# ======================================================================================
+island:
+  spacing: 200
+  center-y: 64
+  protection-radius: 45
+  member-limit: 3
+  max-generators: 12        # base limit, +prestige.extra-generators per prestige
+  clear-on-delete: true
+  clear-radius: 40
+  clear-down: 10
+  clear-up: 30
+  clear-blocks-per-tick: 4000
+
+template:
+  use-structure-file: true
+  structure-file: island.nbt
+  spawn-offset: [0, 1, 0]
+  layers:
+    - {dy: -1, radius: 5, material: GRASS_BLOCK}
+    - {dy: -2, radius: 5, material: DIRT}
+    - {dy: -3, radius: 3, material: STONE}
+    - {dy: -4, radius: 1, material: BEDROCK}
+
+# Generator tiers. material = the generator block itself, interval = seconds per produced block (before the speed
+# upgrade), blocks = weighted table of produced blocks.
+tiers:
+  - id: 1
+    name: "<gray>Cobble Generator"
+    material: MOSSY_COBBLESTONE
+    price: 500
+    interval: 8
+    blocks: {COBBLESTONE: 80, COAL_ORE: 20}
+  - id: 2
+    name: "<white>Iron Generator"
+    material: IRON_BLOCK
+    price: 5000
+    interval: 7
+    blocks: {COBBLESTONE: 40, COAL_ORE: 30, IRON_ORE: 30}
+  - id: 3
+    name: "<gold>Gold Generator"
+    material: GOLD_BLOCK
+    price: 40000
+    interval: 6
+    blocks: {IRON_ORE: 40, GOLD_ORE: 40, REDSTONE_ORE: 20}
+  - id: 4
+    name: "<aqua>Diamond Generator"
+    material: DIAMOND_BLOCK
+    price: 250000
+    interval: 5
+    blocks: {GOLD_ORE: 40, LAPIS_ORE: 20, DIAMOND_ORE: 40}
+  - id: 5
+    name: "<green>Emerald Generator"
+    material: EMERALD_BLOCK
+    price: 1500000
+    interval: 4
+    blocks: {DIAMOND_ORE: 50, EMERALD_ORE: 40, OBSIDIAN: 10}
+
+# Coins paid for mining a produced block (before multipliers). Missing = worth nothing.
+values:
+  COBBLESTONE: 1
+  COAL_ORE: 4
+  IRON_ORE: 9
+  GOLD_ORE: 20
+  REDSTONE_ORE: 25
+  LAPIS_ORE: 35
+  DIAMOND_ORE: 80
+  EMERALD_ORE: 160
+  OBSIDIAN: 300
+
+# Island upgrades (bought by the owner). cost = base-cost * cost-growth ^ currentLevel
+upgrades:
+  speed:
+    slot: 11
+    material: CLOCK
+    name: "<yellow>Generator Speed"
+    lore: ["<gray>Generators produce faster.", "", "<white>Level: <green>{level}<gray>/<green>{max}"]
+    max: 10
+    base-cost: 750
+    cost-growth: 1.7
+    per-level: 0.08        # -8% production time per level
+  multiplier:
+    slot: 15
+    material: GOLD_INGOT
+    name: "<gold>Coin Multiplier"
+    lore: ["<gray>Earn more coins per block.", "", "<white>Level: <green>{level}<gray>/<green>{max}"]
+    max: 10
+    base-cost: 1000
+    cost-growth: 1.8
+    per-level: 0.25        # +25% coins per level
+
+# Prestige: costs money, resets generators and upgrades, grants a permanent multiplier and rank.
+prestige:
+  base-cost: 150000
+  cost-growth: 2.5
+  max: 10
+  multiplier-per-prestige: 0.5
+  extra-generators: 2
+
+# Rank name per prestige level (index = prestige)
+ranks:
+  - "<gray>Novice"
+  - "<green>Apprentice"
+  - "<aqua>Adept"
+  - "<blue>Expert"
+  - "<light_purple>Master"
+  - "<gold>Grandmaster"
+  - "<red>Champion"
+  - "<dark_red>Legend"
+  - "<yellow>Mythic"
+  - "<white><bold>Ascended"
+  - "<gradient:#7b2ff7:#f107a3><bold>Transcendent"
+
+tab-rank-prefix: true
+menus:
+  shop-title: "<dark_gray>Generator Shop"
+  upgrades-title: "<dark_gray>SkyGen Upgrades"

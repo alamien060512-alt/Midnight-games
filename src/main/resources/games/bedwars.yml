@@ -1,0 +1,189 @@
+# ======================================================================================
+#  BedWars - games/bedwars.yml
+#  Setup commands (see README): setspawn <team>, setbed <team>, addgen <iron|gold|diamond|emerald>,
+#  addshop <item|upgrade>. Team colours: red blue green yellow aqua white pink gray (+ orange purple cyan lime black).
+# ======================================================================================
+respawn-delay: 5            # seconds spectating before respawning (only while the bed exists)
+invulnerable-seconds: 3     # protection after respawning
+base-radius: 20             # iron/gold generators within this distance of a team spawn belong to that team
+no-build-radius: 2          # cannot place blocks this close to team spawns and generators (0 = off)
+tnt-fuse-ticks: 40          # TNT is primed instantly when placed
+fireball-yield: 2.0
+armor-tiers: [LEATHER, CHAINMAIL, IRON, DIAMOND]   # leggings + boots upgrade through these tiers
+
+# Items every player receives on spawn / respawn. {color} = team dye colour (for coloured items).
+start-items:
+  - {material: WOODEN_SWORD, unbreakable: true}
+
+# Resource generators. "intervals" = seconds between drops per tier (diamond/emerald tiers are raised by the
+# timeline in "events"; iron/gold only use the first value and are sped up by the Forge upgrade).
+generators:
+  iron:    {material: IRON_INGOT, intervals: [1.5], amount: 1, max-stack: 48}
+  gold:    {material: GOLD_INGOT, intervals: [6.0], amount: 1, max-stack: 16}
+  diamond: {material: DIAMOND, intervals: [30, 23, 12], amount: 1, max-stack: 8}
+  emerald: {material: EMERALD, intervals: [65, 50, 30], amount: 1, max-stack: 4}
+
+# Game timeline (seconds since start). actions: diamond-tier, emerald-tier (value = tier), destroy-beds, end-game
+events:
+  - {time: 360,  action: diamond-tier, value: 2, name: "Diamond II", message: "<aqua>Diamond generators upgraded to <bold>Tier II<reset><aqua>!"}
+  - {time: 720,  action: emerald-tier, value: 2, name: "Emerald II", message: "<green>Emerald generators upgraded to <bold>Tier II<reset><green>!"}
+  - {time: 1080, action: diamond-tier, value: 3, name: "Diamond III", message: "<aqua>Diamond generators upgraded to <bold>Tier III<reset><aqua>!"}
+  - {time: 1440, action: emerald-tier, value: 3, name: "Emerald III", message: "<green>Emerald generators upgraded to <bold>Tier III<reset><green>!"}
+  - {time: 1800, action: destroy-beds, name: "Bed Gone", message: "<red><bold>All beds were destroyed!"}
+  - {time: 2400, action: end-game, name: "Game End", message: "<red>Time ran out!"}
+
+# Lucky Mode: diamond and emerald generators additionally drop a Lucky Block every <interval> seconds.
+lucky:
+  block: SPONGE
+  interval: 30
+loot:
+  lucky:
+    rolls: 2-3
+    items:
+      - {material: IRON_INGOT, amount: 8-16, weight: 20}
+      - {material: GOLD_INGOT, amount: 4-8, weight: 14}
+      - {material: DIAMOND, amount: 1-3, weight: 6}
+      - {material: EMERALD, amount: 1-2, weight: 3}
+      - {material: TNT, amount: 2-4, weight: 8}
+      - {material: FIRE_CHARGE, amount: 1-2, weight: 6}
+      - {material: GOLDEN_APPLE, amount: 1-2, weight: 8}
+      - {material: ENDER_PEARL, amount: 1, weight: 3}
+      - {material: DIAMOND_SWORD, amount: 1, weight: 1}
+      - {material: OBSIDIAN, amount: 4-8, weight: 4}
+
+scoreboard:
+  team-line: "{color}{letter} <white>{name}<gray>: {status}{you}"
+  status-bed: "<green>✔"
+  status-count: "<yellow>{count}"
+  status-dead: "<red>✘"
+  you: " <gray>YOU"
+
+# ---- Item shop ----------------------------------------------------------------------------------
+# cost: a single resource (iron, gold, diamond, emerald) and its amount. "{color}" in a material is replaced
+# by the buyer's team dye colour (e.g. "{color}_WOOL" -> RED_WOOL). type: armor + tier = permanent armour tier.
+shop:
+  title: "<dark_gray>Item Shop"
+  categories:
+    - id: blocks
+      slot: 0
+      material: TERRACOTTA
+      name: "<yellow>Blocks"
+      items:
+        - {id: wool, material: "{color}_WOOL", amount: 16, cost: {iron: 4}, name: "<white>Wool"}
+        - {id: clay, material: "{color}_TERRACOTTA", amount: 16, cost: {iron: 12}, name: "<white>Hardened Clay"}
+        - {id: glass, material: "{color}_STAINED_GLASS", amount: 4, cost: {iron: 12}, name: "<white>Blast-Proof Glass"}
+        - {id: endstone, material: END_STONE, amount: 12, cost: {iron: 24}, name: "<white>End Stone"}
+        - {id: ladder, material: LADDER, amount: 16, cost: {iron: 4}, name: "<white>Ladder"}
+        - {id: planks, material: OAK_PLANKS, amount: 16, cost: {gold: 4}, name: "<white>Wood"}
+        - {id: obsidian, material: OBSIDIAN, amount: 4, cost: {emerald: 4}, name: "<white>Obsidian"}
+    - id: melee
+      slot: 1
+      material: GOLDEN_SWORD
+      name: "<yellow>Melee"
+      items:
+        - {id: stone-sword, material: STONE_SWORD, unbreakable: true, cost: {iron: 10}, name: "<white>Stone Sword"}
+        - {id: iron-sword, material: IRON_SWORD, unbreakable: true, cost: {gold: 7}, name: "<white>Iron Sword"}
+        - {id: diamond-sword, material: DIAMOND_SWORD, unbreakable: true, cost: {emerald: 4}, name: "<white>Diamond Sword"}
+        - {id: kb-stick, material: STICK, enchants: {knockback: 1}, cost: {gold: 5}, name: "<white>Knockback Stick"}
+    - id: armor
+      slot: 2
+      material: CHAINMAIL_BOOTS
+      name: "<yellow>Armor"
+      items:
+        - {id: chain, material: CHAINMAIL_BOOTS, type: armor, tier: 1, cost: {iron: 40}, name: "<white>Chainmail Armor"}
+        - {id: iron, material: IRON_BOOTS, type: armor, tier: 2, cost: {gold: 12}, name: "<white>Iron Armor"}
+        - {id: diamond, material: DIAMOND_BOOTS, type: armor, tier: 3, cost: {emerald: 6}, name: "<white>Diamond Armor"}
+    - id: tools
+      slot: 3
+      material: STONE_PICKAXE
+      name: "<yellow>Tools"
+      items:
+        - {id: shears, material: SHEARS, unbreakable: true, cost: {iron: 20}, name: "<white>Shears"}
+        - {id: wood-pick, material: WOODEN_PICKAXE, unbreakable: true, enchants: {efficiency: 1}, cost: {iron: 10}, name: "<white>Wooden Pickaxe"}
+        - {id: iron-pick, material: IRON_PICKAXE, unbreakable: true, enchants: {efficiency: 2}, cost: {gold: 3}, name: "<white>Iron Pickaxe"}
+        - {id: diamond-pick, material: DIAMOND_PICKAXE, unbreakable: true, enchants: {efficiency: 3}, cost: {gold: 6}, name: "<white>Diamond Pickaxe"}
+        - {id: axe, material: IRON_AXE, unbreakable: true, enchants: {efficiency: 2}, cost: {gold: 3}, name: "<white>Axe"}
+    - id: ranged
+      slot: 4
+      material: BOW
+      name: "<yellow>Ranged"
+      items:
+        - {id: arrows, material: ARROW, amount: 8, cost: {gold: 2}, name: "<white>Arrows"}
+        - {id: bow, material: BOW, unbreakable: true, cost: {gold: 12}, name: "<white>Bow"}
+        - {id: bow-power, material: BOW, unbreakable: true, enchants: {power: 1}, cost: {gold: 24}, name: "<white>Bow (Power I)"}
+        - {id: bow-punch, material: BOW, unbreakable: true, enchants: {power: 1, punch: 1}, cost: {emerald: 6}, name: "<white>Bow (Power I, Punch I)"}
+    - id: potions
+      slot: 5
+      material: BREWING_STAND
+      name: "<yellow>Potions"
+      items:
+        - {id: speed, material: POTION, potion: swiftness, cost: {emerald: 1}, name: "<white>Speed Potion"}
+        - {id: jump, material: POTION, potion: leaping, cost: {emerald: 1}, name: "<white>Jump Potion"}
+    - id: utility
+      slot: 6
+      material: TNT
+      name: "<yellow>Utility"
+      items:
+        - {id: gapple, material: GOLDEN_APPLE, cost: {gold: 3}, name: "<white>Golden Apple"}
+        - {id: fireball, material: FIRE_CHARGE, cost: {iron: 40}, name: "<white>Fireball"}
+        - {id: tnt, material: TNT, cost: {gold: 4}, name: "<white>TNT"}
+        - {id: pearl, material: ENDER_PEARL, cost: {emerald: 4}, name: "<white>Ender Pearl"}
+        - {id: water, material: WATER_BUCKET, cost: {gold: 3}, name: "<white>Water Bucket"}
+        - {id: sponge, material: SPONGE, amount: 4, cost: {gold: 3}, name: "<white>Sponge"}
+        # TODO (not implemented yet): bridge egg, pop-up tower, magic milk, dream defender, traps.
+        - {id: lucky, material: SPONGE, lucky-block: true, cost: {emerald: 2}, name: "<yellow>Lucky Block", lore: ["<gray>Only works in blocks you place"]}
+
+# ---- Team upgrades -------------------------------------------------------------------------------
+upgrades:
+  title: "<dark_gray>Team Upgrades"
+  heal-pool-radius: 12
+  forge-multipliers: [1.0, 1.5, 2.0, 2.5, 3.0]   # index = Forge level
+  list:
+    sharpness:
+      slot: 10
+      material: IRON_SWORD
+      name: "<yellow>Sharpened Swords"
+      lore: ["<gray>Your team permanently gets Sharpness I", "<gray>on all swords.", "", "<white>Level: <green>{level}<gray>/<green>{max}"]
+      currency: diamond
+      tiers:
+        - {cost: 4}
+    protection:
+      slot: 11
+      material: IRON_CHESTPLATE
+      name: "<yellow>Reinforced Armor"
+      lore: ["<gray>Your team permanently gets Protection", "<gray>on all armor pieces.", "", "<white>Level: <green>{level}<gray>/<green>{max}"]
+      currency: diamond
+      tiers:
+        - {cost: 2}
+        - {cost: 4}
+        - {cost: 8}
+        - {cost: 16}
+    forge:
+      slot: 12
+      material: FURNACE
+      name: "<yellow>Iron Forge"
+      lore: ["<gray>Upgrade resource spawning on your island.", "", "<white>Level: <green>{level}<gray>/<green>{max}"]
+      currency: diamond
+      tiers:
+        - {cost: 2}
+        - {cost: 4}
+        - {cost: 6}
+        - {cost: 8}
+    haste:
+      slot: 13
+      material: GOLDEN_PICKAXE
+      name: "<yellow>Maniac Miner"
+      lore: ["<gray>All players on your team permanently", "<gray>gain Haste.", "", "<white>Level: <green>{level}<gray>/<green>{max}"]
+      currency: diamond
+      tiers:
+        - {cost: 2}
+        - {cost: 4}
+    heal-pool:
+      slot: 14
+      material: BEACON
+      name: "<yellow>Heal Pool"
+      lore: ["<gray>Regeneration near your base.", "", "<white>Level: <green>{level}<gray>/<green>{max}"]
+      currency: diamond
+      tiers:
+        - {cost: 1}
+    # TODO (not implemented yet): traps (It's a Trap!, Counter-Offensive, Alarm, Miner Fatigue).

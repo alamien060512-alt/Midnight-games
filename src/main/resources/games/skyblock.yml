@@ -1,0 +1,70 @@
+# ======================================================================================
+#  Skyblock - games/skyblock.yml
+#  Setup: /minigame world create skyblock_world   (void world; or load your own)
+#         /minigame arena create skyblock main ; /minigame arena setworld skyblock main skyblock_world
+#         stand at the hub spawn -> /minigame arena setlobby skyblock main ; /minigame arena enable skyblock main
+#  Players then use /skyblock create, home, sethome, invite, accept, kick, leave, delete, info, upgrades.
+# ======================================================================================
+island:
+  spacing: 200            # distance between island centres. MUST be >= 2 x the largest protection radius
+  center-y: 64
+  protection-radius: 50   # fallback when "upgrades.size" has no tiers
+  member-limit: 3         # fallback total players per island
+  clear-on-delete: true
+  clear-radius: 40
+  clear-down: 20
+  clear-up: 40
+  clear-blocks-per-tick: 4000
+
+# Island template. Order of preference:
+#   1) plugins/MidnightMinigames/templates/skyblock/island.nbt  - a vanilla structure file (save one with a structure block)
+#   2) the layers below.   "dy" is relative to the island centre (y = island.center-y); the player stands at dy 0.
+template:
+  use-structure-file: true
+  structure-file: island.nbt
+  structure-y-offset: 4     # how many blocks of the structure lie below the centre
+  spawn-offset: [0, 1, 0]
+  layers:
+    - {dy: -1, radius: 3, material: GRASS_BLOCK}
+    - {dy: -2, radius: 3, material: DIRT}
+    - {dy: -3, radius: 2, material: DIRT}
+    - {dy: -4, radius: 1, material: BEDROCK}
+  chest:
+    enabled: true
+    dx: 2
+    dy: 0
+    dz: 0
+    items:
+      - {material: ICE, amount: 2}
+      - {material: LAVA_BUCKET}
+      - {material: OAK_SAPLING, amount: 2}
+      - {material: BONE_MEAL, amount: 8}
+      - {material: BREAD, amount: 8}
+      - {material: MELON_SLICE, amount: 2}
+      - {material: PUMPKIN_SEEDS}
+
+# tiers[0] is the starting level (cost 0). The island size tier decides the build radius;
+# "limit" in members tiers is the TOTAL number of players on the island (owner included).
+upgrades:
+  size:
+    slot: 11
+    material: GRASS_BLOCK
+    name: "<aqua>Island Size"
+    lore: ["<gray>Increase your build area.", "", "<white>Level: <green>{level}<gray>/<green>{max}"]
+    tiers:
+      - {radius: 40, cost: 0}
+      - {radius: 60, cost: 2500}
+      - {radius: 80, cost: 10000}
+      - {radius: 100, cost: 25000}
+  members:
+    slot: 15
+    material: PLAYER_HEAD
+    name: "<green>Island Members"
+    lore: ["<gray>Allow more players on your island.", "", "<white>Level: <green>{level}<gray>/<green>{max}"]
+    tiers:
+      - {limit: 2, cost: 0}
+      - {limit: 4, cost: 5000}
+      - {limit: 8, cost: 20000}
+
+upgrades-menu:
+  title: "<dark_gray>Island Upgrades"

@@ -1,0 +1,19 @@
+# ======================================================================================
+#  Spleef - games/spleef.yml
+#  Setup: select the floor with /minigame pos1 + pos2 (cover the whole breakable floor, 1 or more layers), then
+#  /minigame arena setregion spleef <arena> floor. Spawn points: /minigame arena addspawn.
+#  The floor is refilled with the blocks below at the start of every round and when the arena resets.
+# ======================================================================================
+rounds: 3                  # default; a mode can override with "rounds: n" in config.yml
+round-intermission: 5      # seconds between rounds
+
+floor:
+  fall-depth: 3            # blocks below the floor region that count as "fell out"
+  blocks:                  # weighted random blocks
+    SNOW_BLOCK: 1
+
+tool:
+  material: IRON_SHOVEL
+  name: "<aqua>Spleef Shovel"
+  unbreakable: true
+  enchants: {efficiency: 5}

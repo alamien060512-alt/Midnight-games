@@ -1,0 +1,71 @@
+# ======================================================================================
+#  SkyWars - games/skywars.yml
+#  Setup: /minigame arena addspawn (solo) or setspawn <team> (teams); register chests with
+#  addchest [island|mid] (look at one) or scanchests (uses /minigame pos1 + pos2).
+# ======================================================================================
+freeze-seconds: 5       # players cannot move right after the start (cage replacement)
+grace-seconds: 10       # no PvP for this long after the freeze
+refill-times: [180, 360]  # seconds after start when all chests refill
+
+lucky:
+  block: SPONGE
+
+# Weighted loot tables. rolls = number of items per chest (range). amount may be a range.
+loot:
+  island:
+    rolls: 5-8
+    items:
+      - {material: STONE_SWORD, weight: 8}
+      - {material: IRON_SWORD, weight: 3}
+      - {material: IRON_AXE, weight: 3}
+      - {material: LEATHER_HELMET, weight: 5}
+      - {material: LEATHER_CHESTPLATE, weight: 5}
+      - {material: LEATHER_LEGGINGS, weight: 5}
+      - {material: LEATHER_BOOTS, weight: 5}
+      - {material: CHAINMAIL_CHESTPLATE, weight: 3}
+      - {material: IRON_HELMET, weight: 2}
+      - {material: OAK_PLANKS, amount: 24-48, weight: 12}
+      - {material: COBBLESTONE, amount: 24-48, weight: 12}
+      - {material: COOKED_BEEF, amount: 4-8, weight: 8}
+      - {material: BOW, weight: 3}
+      - {material: ARROW, amount: 6-14, weight: 5}
+      - {material: WATER_BUCKET, weight: 4}
+      - {material: LAVA_BUCKET, weight: 2}
+      - {material: SNOWBALL, amount: 8-16, weight: 4}
+      - {material: EGG, amount: 8-16, weight: 3}
+      - {material: IRON_PICKAXE, weight: 2}
+  mid:
+    rolls: 4-7
+    items:
+      - {material: DIAMOND_SWORD, weight: 2}
+      - {material: IRON_SWORD, enchants: {sharpness: 1}, weight: 3}
+      - {material: DIAMOND_HELMET, weight: 2}
+      - {material: DIAMOND_CHESTPLATE, weight: 1}
+      - {material: DIAMOND_LEGGINGS, weight: 1}
+      - {material: DIAMOND_BOOTS, weight: 2}
+      - {material: IRON_CHESTPLATE, weight: 4}
+      - {material: IRON_LEGGINGS, weight: 4}
+      - {material: IRON_BOOTS, weight: 4}
+      - {material: GOLDEN_APPLE, amount: 1-3, weight: 6}
+      - {material: ENDER_PEARL, amount: 1-2, weight: 4}
+      - {material: BOW, enchants: {power: 1}, weight: 3}
+      - {material: ARROW, amount: 12-24, weight: 6}
+      - {material: TNT, amount: 2-5, weight: 3}
+      - {material: FLINT_AND_STEEL, weight: 2}
+      - {material: EXPERIENCE_BOTTLE, amount: 8-16, weight: 3}
+      - {material: OAK_PLANKS, amount: 32-64, weight: 6}
+  lucky:
+    rolls: 1-3
+    items:
+      - {material: DIAMOND_SWORD, weight: 2}
+      - {material: IRON_CHESTPLATE, weight: 4}
+      - {material: GOLDEN_APPLE, amount: 1-3, weight: 6}
+      - {material: ENDER_PEARL, amount: 1-2, weight: 4}
+      - {material: TNT, amount: 2-4, weight: 4}
+      - {material: BOW, weight: 4}
+      - {material: ARROW, amount: 8-16, weight: 6}
+      - {material: OAK_PLANKS, amount: 32, weight: 8}
+      - {material: COOKED_BEEF, amount: 8, weight: 8}
+      - {material: LAVA_BUCKET, weight: 2}
+      - {material: WATER_BUCKET, weight: 3}
+      - {material: DIAMOND_CHESTPLATE, weight: 1}

@@ -1,0 +1,102 @@
+# ======================================================================================
+#  MidnightMinigames - menus.yml
+#  Every item is built from: material, name, lore, amount, enchants, glow, hide-flags, unbreakable, color, potion.
+#  Placeholders in lore: {players} {game} (main menu), {players} {queued} {game} {mode} (mode menu).
+# ======================================================================================
+
+# Items given in the hotbar. The compass opens the main menu; the leave item is given inside lobbies of round games.
+lobby-items:
+  compass:
+    enabled: true
+    slot: 4
+    material: COMPASS
+    name: "<gradient:#7b2ff7:#f107a3><bold>Minigames <gray>(Right Click)"
+    lore:
+      - "<gray>Right click to choose a game."
+  leave:
+    slot: 8
+    material: RED_DYE
+    name: "<red><bold>Leave Game <gray>(Right Click)"
+    lore:
+      - "<gray>Right click to return to the lobby."
+
+# ---- Main menu (compass) ---------------------------------------------------------------------
+# One entry per game id. Games that are disabled in config.yml are hidden (or shown as disabled-item).
+main-menu:
+  title: "<gradient:#7b2ff7:#f107a3><bold>Select a Minigame"
+  rows: 4
+  show-disabled-games: false
+  filler:
+    enabled: true
+    material: BLACK_STAINED_GLASS_PANE
+    name: " "
+  disabled-item:
+    material: BARRIER
+    name: "<red>{game} <dark_gray>(disabled)"
+  items:
+    bedwars:
+      slot: 10
+      material: RED_BED
+      name: "<red><bold>BEDWARS"
+      lore: ["<gray>Protect your bed, destroy the others!", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a mode"]
+    skywars:
+      slot: 11
+      material: ENDER_EYE
+      name: "<aqua><bold>SKYWARS"
+      lore: ["<gray>Loot islands, fight in the sky.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a mode"]
+    spleef:
+      slot: 12
+      material: DIAMOND_SHOVEL
+      name: "<aqua><bold>SPLEEF"
+      lore: ["<gray>Dig the floor from under your enemies.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a mode"]
+    duels:
+      slot: 13
+      material: DIAMOND_SWORD
+      name: "<gold><bold>DUELS"
+      lore: ["<gray>Pick a kit and fight.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a kit"]
+    1v1:
+      slot: 14
+      material: IRON_SWORD
+      name: "<green><bold>1V1"
+      lore: ["<gray>Quick random 1v1 matches.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to queue"]
+    parkour:
+      slot: 15
+      material: LEATHER_BOOTS
+      name: "<green><bold>PARKOUR"
+      lore: ["<gray>Race through courses for the best time.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a course"]
+    prison:
+      slot: 16
+      material: IRON_BARS
+      name: "<gold><bold>PRISON"
+      lore: ["<gray>Mine, sell, rank up.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to enter"]
+    skyblock:
+      slot: 20
+      material: GRASS_BLOCK
+      name: "<green><bold>SKYBLOCK"
+      lore: ["<gray>Build your own island.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to enter"]
+    oneblock:
+      slot: 22
+      material: OAK_LOG
+      name: "<yellow><bold>ONEBLOCK"
+      lore: ["<gray>One block. Endless progression.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to enter"]
+    skygen:
+      slot: 24
+      material: BEACON
+      name: "<light_purple><bold>SKYGEN"
+      lore: ["<gray>Generators, upgrades, prestige.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to enter"]
+
+# ---- Mode menu (opened after clicking a game, or by /bw /sw ...) -------------------------------------------
+# The modes themselves are defined in config.yml -> games.<id>.modes (Duels: kits, Parkour: courses).
+mode-menu:
+  title: "{game} <dark_gray>» <gray>Select a mode"
+  rows: 3
+  filler:
+    enabled: true
+    material: GRAY_STAINED_GLASS_PANE
+    name: " "
+  back:
+    enabled: true
+    slot: 22
+    material: ARROW
+    name: "<red>Back"
+    lore: ["<gray>Return to the game list."]

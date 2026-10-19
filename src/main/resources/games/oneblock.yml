@@ -1,0 +1,82 @@
+# ======================================================================================
+#  OneBlock - games/oneblock.yml
+#  Setup is the same as Skyblock (void world, arena "main", hub spawn, enable).
+#  Commands: /oneblock create, home, sethome, invite, accept, kick, leave, delete, info, phase, reset.
+#  The island centre block is the OneBlock; it regenerates from the current phase's block table.
+# ======================================================================================
+island:
+  spacing: 200
+  center-y: 64
+  protection-radius: 35
+  member-limit: 3
+  clear-on-delete: true
+  clear-radius: 20
+  clear-down: 10
+  clear-up: 40
+  clear-blocks-per-tick: 4000
+
+# Layers must use dy <= -1: the OneBlock itself sits at dy 0.
+template:
+  use-structure-file: true
+  structure-file: island.nbt
+  spawn-offset: [0, 2, 0]
+  layers:
+    - {dy: -1, radius: 2, material: GRASS_BLOCK, shape: circle}
+    - {dy: -2, radius: 1, material: DIRT}
+
+reset:
+  clear-radius: 12
+  clear-down: 6
+  clear-up: 30
+
+# Default loot for chest events (phases can override with their own chest-loot).
+chest-loot:
+  rolls: 3-5
+  items:
+    - {material: BREAD, amount: 4-8, weight: 10}
+    - {material: OAK_SAPLING, amount: 1-3, weight: 8}
+    - {material: IRON_INGOT, amount: 2-6, weight: 8}
+    - {material: COAL, amount: 4-10, weight: 8}
+    - {material: BONE_MEAL, amount: 4-12, weight: 6}
+    - {material: GOLD_INGOT, amount: 1-4, weight: 4}
+    - {material: DIAMOND, amount: 1-2, weight: 1}
+
+# Phases unlock at "start" blocks broken. blocks = weighted table. Optional: mobs (entity types), mob-chance,
+# chest-chance (0.0 - 1.0 per regeneration), chest-loot.
+phases:
+  - name: "<green>Plains"
+    start: 0
+    blocks: {GRASS_BLOCK: 40, DIRT: 20, OAK_LOG: 15, OAK_LEAVES: 10, SAND: 5, GRAVEL: 5}
+    mobs: [COW, SHEEP, PIG, CHICKEN]
+    mob-chance: 0.05
+    chest-chance: 0.03
+  - name: "<gray>Caves"
+    start: 200
+    blocks: {STONE: 40, COBBLESTONE: 20, COAL_ORE: 15, IRON_ORE: 12, GRAVEL: 8, COPPER_ORE: 5}
+    mobs: [ZOMBIE, SKELETON, SPIDER]
+    mob-chance: 0.06
+    chest-chance: 0.04
+  - name: "<dark_green>Forest"
+    start: 500
+    blocks: {OAK_LOG: 25, BIRCH_LOG: 20, SPRUCE_LOG: 15, MOSS_BLOCK: 10, GRASS_BLOCK: 15, PODZOL: 10, DARK_OAK_LOG: 5}
+    mobs: [WOLF, RABBIT, FOX]
+    mob-chance: 0.05
+    chest-chance: 0.04
+  - name: "<aqua>Frozen"
+    start: 1000
+    blocks: {SNOW_BLOCK: 30, ICE: 20, PACKED_ICE: 15, SPRUCE_LOG: 15, GOLD_ORE: 10, LAPIS_ORE: 5, DIAMOND_ORE: 5}
+    mobs: [POLAR_BEAR, STRAY]
+    mob-chance: 0.06
+    chest-chance: 0.05
+  - name: "<red>Nether"
+    start: 2000
+    blocks: {NETHERRACK: 40, SOUL_SAND: 15, GLOWSTONE: 10, NETHER_QUARTZ_ORE: 15, NETHER_GOLD_ORE: 10, MAGMA_BLOCK: 10}
+    mobs: [ZOMBIFIED_PIGLIN, MAGMA_CUBE, BLAZE]
+    mob-chance: 0.08
+    chest-chance: 0.05
+  - name: "<light_purple>The End"
+    start: 3500
+    blocks: {END_STONE: 50, OBSIDIAN: 15, PURPUR_BLOCK: 20, END_STONE_BRICKS: 5, DIAMOND_ORE: 5, EMERALD_ORE: 5}
+    mobs: [ENDERMAN, SHULKER]
+    mob-chance: 0.08
+    chest-chance: 0.06

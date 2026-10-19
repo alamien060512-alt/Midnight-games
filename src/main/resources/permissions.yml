@@ -1,0 +1,21 @@
+# ======================================================================================
+#  MidnightMinigames - permissions.yml
+#  Maps the plugin's logical permission keys to real permission nodes. Change a node here
+#  and the plugin (commands, menus, lobby protection) uses the new node immediately after /minigame reload.
+#  Holding the "admin" node grants every admin-* key.
+#  The matching defaults are declared in plugin.yml (play/menu/party/spectate: everyone, admin: op).
+# ======================================================================================
+nodes:
+  play: midnight.play                  # join any minigame (required for all games)
+  play-game: "midnight.play.{game}"    # per-game permission, e.g. midnight.play.bedwars (negate to block one game)
+  menu: midnight.menu                  # open the compass menu / game commands (/bw, /sw ...)
+  party: midnight.party                # /party
+  spectate: midnight.spectate          # /spectate
+  admin: midnight.admin                # everything below
+  admin-reload: midnight.admin.reload  # /minigame reload
+  admin-arena: midnight.admin.arena    # arena setup, pos1/pos2, setlobby
+  admin-forcestart: midnight.admin.forcestart
+  admin-stop: midnight.admin.stop
+  admin-world: midnight.admin.world    # /minigame world ...
+  admin-build: midnight.admin.build    # build in the lobby / protected islands / mines
+  admin-stats: midnight.admin.stats    # /minigame stats, addcoins

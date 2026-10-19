@@ -1,0 +1,553 @@
+# ======================================================================================
+#  MidnightMinigames - config.yml
+#  Texts support MiniMessage (<red>, <gradient:#fff:#000>, <bold> ...) and legacy &-codes.
+#  Detailed per-game settings (shops, loot, ranks, kits...) live in plugins/MidnightMinigames/games/*.yml
+#  Reload everything with /minigame reload
+# ======================================================================================
+
+# ---- Storage -----------------------------------------------------------------------
+# Player statistics (wins, losses, kills, deaths, coins, games played) and per-game data.
+# All database access runs on a dedicated worker thread - never on the main thread.
+database:
+  type: sqlite              # sqlite | mysql (MariaDB works through the MySQL protocol)
+  sqlite-file: data/stats.db
+  table-prefix: midnight_
+  autosave-minutes: 5       # dirty profiles are also saved when a player quits
+  # --- only used when type: mysql ---
+  host: localhost
+  port: 3306
+  database: midnight
+  username: root
+  password: ""
+  parameters: "useSSL=false&autoReconnect=true"
+
+# ---- Economy ---------------------------------------------------------------------------
+# internal = the plugin's own coins (the "coins" stat). vault = any Vault economy (soft hook, via reflection).
+economy:
+  provider: internal
+
+# ---- Main lobby ------------------------------------------------------------------------
+lobby:
+  # Set in-game with /minigame setlobby (stored in data/lobby.yml). This value is only a fallback:
+  # format "world,x,y,z,yaw,pitch"
+  location: ""
+  teleport-on-join: true
+  give-compass-on-join: true      # compass item is configured in menus.yml -> lobby-items.compass
+  reset-on-join: false            # clear inventory / set gamemode on join (usually a lobby plugin does this)
+  gamemode: ADVENTURE
+  teleport-on-leave: true         # return to the main lobby when leaving a game
+  protect-blocks: true            # no block breaking/placing in the lobby world (bypass: midnight.admin.build)
+  disable-damage: true
+  disable-hunger: true
+
+# ---- Worlds & arena resets ----------------------------------------------------------------
+worlds:
+  auto-load: true                 # load arena worlds on demand when their folder exists
+  restore-blocks-per-tick: 2000   # block-restore speed after a game (spread over ticks)
+  # World-copy reset replaces the whole world folder with a copy of
+  # plugins/MidnightMinigames/world-templates/<worldname>. It DELETES the existing world folder, so it is OFF by
+  # default and only used by arenas with "reset-mode: world-copy" (/minigame arena setreset <g> <a> world-copy).
+  world-copy-reset:
+    enabled: false
+
+# ---- Defaults for new arenas ---------------------------------------------------------------
+defaults:
+  countdown: 15          # seconds in the lobby once min players are reached
+  full-countdown: 10     # countdown is shortened to this when the arena is full
+  game-time: 1800        # max game length in seconds (0 = unlimited)
+  end-delay: 8           # seconds between the winner announcement and the arena reset
+
+party:
+  max-size: 4
+  invite-expire-seconds: 60
+
+# Commands (without the slash) that players cannot use while inside a round based game.
+# Players with midnight.admin are exempt.
+restrictions:
+  blocked-commands: [spawn, home, tpa, tpaccept, warp, back, tp, hub, lobby]
+
+titles:
+  fade-in: 10
+  stay: 40
+  fade-out: 10
+
+# ---- Sounds -----------------------------------------------------------------------------------
+# Any vanilla sound key. Set "enabled: false" to silence everything.
+sounds:
+  enabled: true
+  countdown:      {sound: "block.note_block.hat",          volume: 1.0, pitch: 1.0}
+  start:          {sound: "entity.ender_dragon.growl",     volume: 0.6, pitch: 1.0}
+  join:           {sound: "entity.experience_orb.pickup",  volume: 1.0, pitch: 1.2}
+  win:            {sound: "entity.player.levelup",         volume: 1.0, pitch: 1.0}
+  lose:           {sound: "entity.villager.no",            volume: 1.0, pitch: 0.8}
+  kill:           {sound: "entity.experience_orb.pickup",  volume: 1.0, pitch: 0.6}
+  eliminated:     {sound: "entity.wither.hurt",            volume: 0.6, pitch: 1.0}
+  respawn:        {sound: "entity.enderman.teleport",      volume: 1.0, pitch: 1.0}
+  bed-destroyed:  {sound: "entity.wither.death",           volume: 0.8, pitch: 1.0}
+  event:          {sound: "block.note_block.bell",         volume: 1.0, pitch: 1.0}
+  refill:         {sound: "block.chest.open",              volume: 1.0, pitch: 1.0}
+  menu-open:      {sound: "block.chest.open",              volume: 0.6, pitch: 1.4}
+  menu-click:     {sound: "ui.button.click",               volume: 1.0, pitch: 1.0}
+  shop-buy:       {sound: "entity.item.pickup",            volume: 1.0, pitch: 1.2}
+  shop-fail:      {sound: "entity.villager.no",            volume: 1.0, pitch: 1.0}
+  checkpoint:     {sound: "block.note_block.pling",        volume: 1.0, pitch: 1.5}
+  parkour-fall:   {sound: "entity.enderman.teleport",      volume: 0.7, pitch: 1.0}
+
+effects:
+  win-fireworks:
+    enabled: true
+    count: 2
+  elimination-lightning: false
+
+# ---- Scoreboard -------------------------------------------------------------------------------
+# One sidebar per player. Lines are only re-sent when their text changed. A line that consists only of
+# placeholders which resolve to nothing is hidden (used for the BedWars team list).
+# Variables: {player} {online} {in_games} {coins} {wins} {losses} {kills} {deaths} {date}
+#   in games also: {game} {arena} {mode} {state} {players} {max} {min} {countdown} {countdown_line} {time}
+#   {timeleft} {team} {team_colored} {alive} - plus game specific ones (see games/*.yml comments).
+# With PlaceholderAPI installed, any %placeholder% works too.
+scoreboard:
+  enabled: true
+  update-ticks: 20
+  show-in-lobby: true
+  hide-score-numbers: true     # hides the red score column on the right
+  use-placeholderapi: true
+  title: "<gradient:#7b2ff7:#f107a3><bold>Midnight Network"
+  layouts:
+    lobby:
+      lines:
+        - "<gray>{date}"
+        - ""
+        - "<white>Player: <aqua>{player}"
+        - "<white>Coins: <gold>{coins}"
+        - "<white>Wins: <green>{wins}"
+        - ""
+        - "<white>Online: <green>{online}"
+        - "<white>Playing: <green>{in_games}"
+        - ""
+        - "<yellow>play.yourserver.net"
+    default:
+      waiting:
+        lines:
+          - "<gray>{date} <dark_gray>{arena}"
+          - ""
+          - "<white>Game: <aqua>{game}"
+          - "<white>Players: <green>{players}<gray>/<green>{max}"
+          - "<white>Mode: <aqua>{mode}"
+          - "<white>Status: <yellow>{state}"
+          - "{countdown_line}"
+          - ""
+          - "<yellow>play.yourserver.net"
+      ingame:
+        lines:
+          - "<gray>{date} <dark_gray>{arena}"
+          - ""
+          - "<white>Game: <aqua>{game}"
+          - "<white>Players: <green>{players}"
+          - "<white>Kills: <green>{kills}"
+          - "<white>Time: <yellow>{time}"
+          - ""
+          - "<yellow>play.yourserver.net"
+      ending:
+        lines:
+          - "<gray>{date}"
+          - ""
+          - "<white>Game: <aqua>{game}"
+          - "<white>Status: <red>{state}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    bedwars:
+      ingame:
+        lines:
+          - "<gray>{date} <dark_gray>{arena}"
+          - ""
+          - "<white>{next_event} <green>{next_event_in}"
+          - ""
+          - "{team_red}"
+          - "{team_blue}"
+          - "{team_green}"
+          - "{team_yellow}"
+          - "{team_aqua}"
+          - "{team_white}"
+          - "{team_pink}"
+          - "{team_gray}"
+          - ""
+          - "<white>Kills: <green>{kills}"
+          - "<yellow>play.yourserver.net"
+    skywars:
+      ingame:
+        lines:
+          - "<gray>{date} <dark_gray>{arena}"
+          - ""
+          - "<white>Alive: <green>{alive}"
+          - "<white>Kills: <green>{kills}"
+          - "<white>Next refill: <yellow>{refill}"
+          - "<white>Time: <yellow>{time}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    spleef:
+      ingame:
+        lines:
+          - "<gray>{date} <dark_gray>{arena}"
+          - ""
+          - "<white>Round: <aqua>{round}<gray>/<aqua>{rounds}"
+          - "<white>Alive: <green>{alive}"
+          - "<white>Your wins: <gold>{score}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    duels:
+      ingame:
+        lines:
+          - "<gray>{date}"
+          - ""
+          - "<white>Kit: <aqua>{kit}"
+          - "<white>Opponent: <red>{opponent}"
+          - "<white>Hits: <green>{hits} <gray>- <red>{opponent_hits}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    1v1:
+      ingame:
+        lines:
+          - "<gray>{date}"
+          - ""
+          - "<white>Kit: <aqua>{kit}"
+          - "<white>Opponent: <red>{opponent}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    parkour:
+      ingame:
+        lines:
+          - "<gray>{date}"
+          - ""
+          - "<white>Course: <aqua>{course}"
+          - "<white>Time: <yellow>{time}"
+          - "<white>Checkpoint: <green>{checkpoint}<gray>/<green>{checkpoints}"
+          - "<white>Best: <gold>{best}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    prison:
+      ingame:
+        lines:
+          - "<gray>{date}"
+          - ""
+          - "<white>Rank: <aqua>{rank}"
+          - "<white>Next: <gray>{next_rank} <gold>${next_cost}"
+          - "<white>Mined: <green>{mined}"
+          - "<white>Balance: <gold>${balance}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    skyblock:
+      ingame:
+        lines:
+          - "<gray>{date}"
+          - ""
+          - "<white>Island owner: <aqua>{island_owner}"
+          - "<white>Members: <green>{island_members}"
+          - "<white>Radius: <yellow>{island_radius}"
+          - "<white>Balance: <gold>${balance}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    oneblock:
+      ingame:
+        lines:
+          - "<gray>{date}"
+          - ""
+          - "<white>Phase: <aqua>{phase}"
+          - "<white>Blocks: <green>{blocks}"
+          - "<white>Next phase in: <yellow>{next_phase_in}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    skygen:
+      ingame:
+        lines:
+          - "<gray>{date}"
+          - ""
+          - "<white>Rank: <light_purple>{rank}"
+          - "<white>Balance: <gold>${balance}"
+          - "<white>Multiplier: <green>x{multiplier}"
+          - "<white>Generators: <aqua>{generators}"
+          - ""
+          - "<yellow>play.yourserver.net"
+
+# ---- Tab list (optional) -----------------------------------------------------------------------
+# Updated on join / game start only (no repeating task). Other plugins can add providers through the API.
+tab:
+  enabled: false
+  format: "{prefix}{player}{suffix}"
+  prefixes:
+    lobby: ""
+    prison: ""      # prison / skygen add their own rank prefix
+  header:
+    - ""
+    - "<gradient:#7b2ff7:#f107a3><bold>Midnight Network"
+    - "<gray>Online: <white>{online}"
+  footer:
+    - "<yellow>play.yourserver.net"
+    - ""
+
+# ======================================================================================
+#  Games. "enabled: false" hides a game from the menus and skips loading it.
+#  modes: shown in the mode GUI. Keys: name, material, lore, slot, team-size, lucky, min-players, max-players
+#  (min/max-players are hints printed by /minigame arena setmode; the arena file holds the real values).
+#  An arena belongs to exactly one mode (arena yml: mode: doubles) - create one arena per map and mode.
+#  rewards: coins paid on win / loss / kill (parkour: finish).
+# ======================================================================================
+games:
+  bedwars:
+    enabled: true
+    display-name: "<red>BedWars"
+    spectators: true
+    rewards: {win: 50, loss: 5, kill: 2}
+    modes:
+      solo:
+        name: "<red><bold>Solo"
+        material: RED_BED
+        slot: 10
+        team-size: 1
+        min-players: 2
+        max-players: 8
+        lore:
+          - "<gray>Eight teams of one player."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to play!"
+      doubles:
+        name: "<gold><bold>Doubles"
+        material: ORANGE_BED
+        slot: 11
+        team-size: 2
+        min-players: 4
+        max-players: 16
+        lore:
+          - "<gray>Eight teams of two players."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to play!"
+      3v3:
+        name: "<green><bold>3v3"
+        material: LIME_BED
+        slot: 12
+        team-size: 3
+        min-players: 6
+        max-players: 12
+        lore:
+          - "<gray>Four teams of three players."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<yellow>Click to play!"
+      4v4:
+        name: "<aqua><bold>4v4"
+        material: LIGHT_BLUE_BED
+        slot: 13
+        team-size: 4
+        min-players: 8
+        max-players: 8
+        lore:
+          - "<gray>Two teams of four players."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<yellow>Click to play!"
+      4v4v4v4:
+        name: "<light_purple><bold>4v4v4v4"
+        material: PURPLE_BED
+        slot: 14
+        team-size: 4
+        min-players: 8
+        max-players: 16
+        lore:
+          - "<gray>Four teams of four players."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<yellow>Click to play!"
+      lucky:
+        name: "<yellow><bold>Lucky Mode"
+        material: SPONGE
+        slot: 16
+        team-size: 2
+        lucky: true
+        min-players: 4
+        max-players: 16
+        lore:
+          - "<gray>Generators drop <yellow>Lucky Blocks<gray>."
+          - "<gray>Break them for random loot!"
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<yellow>Click to play!"
+  skywars:
+    enabled: true
+    display-name: "<aqua>SkyWars"
+    spectators: true
+    rewards: {win: 50, loss: 5, kill: 3}
+    modes:
+      solo:
+        name: "<aqua><bold>Solo"
+        material: ENDER_EYE
+        slot: 11
+        team-size: 1
+        min-players: 2
+        max-players: 12
+        lore:
+          - "<gray>Every player for themselves."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to play!"
+      teams:
+        name: "<green><bold>Teams"
+        material: ENDER_PEARL
+        slot: 13
+        team-size: 2
+        min-players: 4
+        max-players: 12
+        lore:
+          - "<gray>Teams of two (arena team spawns)."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<yellow>Click to play!"
+      lucky:
+        name: "<yellow><bold>Lucky Mode"
+        material: SPONGE
+        slot: 15
+        team-size: 1
+        lucky: true
+        min-players: 2
+        max-players: 12
+        lore:
+          - "<gray>Chests are replaced by <yellow>Lucky Blocks<gray>."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<yellow>Click to play!"
+  spleef:
+    enabled: true
+    display-name: "<aqua>Spleef"
+    spectators: true
+    rewards: {win: 25, loss: 3, kill: 0}
+    modes:
+      classic:
+        name: "<aqua><bold>Classic"
+        material: SNOW_BLOCK
+        slot: 12
+        rounds: 3
+        min-players: 2
+        max-players: 12
+        lore:
+          - "<gray>Best of 3 rounds."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<yellow>Click to play!"
+      marathon:
+        name: "<gold><bold>Marathon"
+        material: DIAMOND_SHOVEL
+        slot: 14
+        rounds: 7
+        min-players: 2
+        max-players: 12
+        lore:
+          - "<gray>Best of 7 rounds."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<yellow>Click to play!"
+  duels:
+    enabled: true
+    display-name: "<gold>Duels"
+    spectators: true
+    end-delay: 5
+    rewards: {win: 20, loss: 2, kill: 0}
+    # modes are generated from the kits in games/duels.yml
+  1v1:
+    enabled: true
+    display-name: "<green>1v1"
+    spectators: true
+    end-delay: 5
+    rewards: {win: 15, loss: 1, kill: 0}
+    modes:
+      quick:
+        name: "<green><bold>Quick 1v1"
+        material: IRON_SWORD
+        slot: 12
+        kit: random
+        lore:
+          - "<gray>A random kit every match."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to queue!"
+      classic:
+        name: "<gold><bold>Classic 1v1"
+        material: DIAMOND_SWORD
+        slot: 14
+        kit: classic
+        lore:
+          - "<gray>The Classic kit."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to queue!"
+  prison:
+    enabled: true
+    display-name: "<gold>Prison"
+    pvp: false
+    modes:
+      play:
+        name: "<gold><bold>Enter Prison"
+        material: IRON_BARS
+        slot: 13
+        lore:
+          - "<gray>Mine, sell and rank up."
+          - ""
+          - "<white>Players: <green>{players}"
+          - "<yellow>Click to enter!"
+  skyblock:
+    enabled: true
+    display-name: "<green>Skyblock"
+    pvp: false
+    modes:
+      play:
+        name: "<green><bold>Your Island"
+        material: GRASS_BLOCK
+        slot: 13
+        lore:
+          - "<gray>Build your island in the sky."
+          - ""
+          - "<white>Players: <green>{players}"
+          - "<yellow>Click to enter!"
+  parkour:
+    enabled: true
+    display-name: "<green>Parkour"
+    rewards: {finish: 10}
+    # modes are generated from the enabled parkour arenas (courses)
+  oneblock:
+    enabled: true
+    display-name: "<yellow>OneBlock"
+    pvp: false
+    modes:
+      play:
+        name: "<yellow><bold>Your OneBlock"
+        material: GRASS_BLOCK
+        slot: 13
+        lore:
+          - "<gray>One block. Endless possibilities."
+          - ""
+          - "<white>Players: <green>{players}"
+          - "<yellow>Click to enter!"
+  skygen:
+    enabled: true
+    display-name: "<light_purple>SkyGen"
+    pvp: false
+    modes:
+      play:
+        name: "<light_purple><bold>Your Generators"
+        material: BEACON
+        slot: 13
+        lore:
+          - "<gray>Place generators, mine, prestige."
+          - ""
+          - "<white>Players: <green>{players}"
+          - "<yellow>Click to enter!"

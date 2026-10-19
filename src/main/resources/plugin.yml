@@ -1,0 +1,129 @@
+name: MidnightMinigames
+version: '${project.version}'
+main: dev.midnight.minigames.MidnightMinigames
+api-version: '26.3'
+authors: [Midnight]
+description: Modular all-in-one minigame framework (BedWars, SkyWars, Spleef, Prison, Skyblock, Duels, 1v1, Parkour, OneBlock, SkyGen)
+softdepend: [PlaceholderAPI, Vault]
+load: POSTWORLD
+
+commands:
+  minigame:
+    description: Admin command for MidnightMinigames
+    aliases: [mg, minigames, midnight]
+    usage: /minigame help
+  party:
+    description: Party management
+    aliases: [pty]
+    usage: /party <create|invite|accept|leave|disband>
+  games:
+    description: Open the main minigame menu (same as the lobby compass)
+    aliases: [gamemenu, minigamemenu]
+  leave:
+    description: Leave your current minigame
+    aliases: [lobby, hub, l]
+    usage: /leave
+  spectate:
+    description: Spectate a player's game
+    usage: /spectate <player>
+  bw:
+    description: Open the BedWars menu
+    aliases: [bedwars]
+  sw:
+    description: Open the SkyWars menu
+    aliases: [skywars]
+  spleef:
+    description: Open the Spleef menu
+  prison:
+    description: Prison menu and commands
+  skyblock:
+    description: Skyblock menu and island commands
+    aliases: [sb]
+  duels:
+    description: Open the Duels menu
+  1v1:
+    description: Open the 1v1 menu
+    aliases: [onevone]
+  parkour:
+    description: Parkour menu and commands
+    aliases: [pk]
+  oneblock:
+    description: OneBlock menu and island commands
+    aliases: [ob]
+  skygen:
+    description: SkyGen menu and commands
+    aliases: [sg]
+
+permissions:
+  midnight.play:
+    description: Play minigames
+    default: true
+  midnight.play.*:
+    description: Play every minigame
+    default: true
+    children:
+      midnight.play.bedwars: true
+      midnight.play.skywars: true
+      midnight.play.spleef: true
+      midnight.play.prison: true
+      midnight.play.skyblock: true
+      midnight.play.duels: true
+      midnight.play.1v1: true
+      midnight.play.parkour: true
+      midnight.play.oneblock: true
+      midnight.play.skygen: true
+  midnight.play.bedwars:
+    default: true
+  midnight.play.skywars:
+    default: true
+  midnight.play.spleef:
+    default: true
+  midnight.play.prison:
+    default: true
+  midnight.play.skyblock:
+    default: true
+  midnight.play.duels:
+    default: true
+  midnight.play.1v1:
+    default: true
+  midnight.play.parkour:
+    default: true
+  midnight.play.oneblock:
+    default: true
+  midnight.play.skygen:
+    default: true
+  midnight.menu:
+    description: Use the compass menu and game commands
+    default: true
+  midnight.party:
+    description: Use parties
+    default: true
+  midnight.spectate:
+    description: Spectate games
+    default: true
+  midnight.admin:
+    description: All admin permissions
+    default: op
+    children:
+      midnight.admin.reload: true
+      midnight.admin.arena: true
+      midnight.admin.forcestart: true
+      midnight.admin.stop: true
+      midnight.admin.world: true
+      midnight.admin.build: true
+      midnight.admin.stats: true
+  midnight.admin.reload:
+    default: op
+  midnight.admin.arena:
+    default: op
+  midnight.admin.forcestart:
+    default: op
+  midnight.admin.stop:
+    default: op
+  midnight.admin.world:
+    default: op
+  midnight.admin.build:
+    description: Build/break in lobby and protected island areas
+    default: op
+  midnight.admin.stats:
+    default: op
