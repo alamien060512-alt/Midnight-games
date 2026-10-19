@@ -1,39 +1,32 @@
-# ======================================================================================
-#  BedWars - games/bedwars.yml
-#  Setup commands (see README): setspawn <team>, setbed <team>, addgen <iron|gold|diamond|emerald>,
-#  addshop <item|upgrade>. Team colours: red blue green yellow aqua white pink gray (+ orange purple cyan lime black).
-# ======================================================================================
-respawn-delay: 5            # seconds spectating before respawning (only while the bed exists)
-invulnerable-seconds: 3     # protection after respawning
-base-radius: 20             # iron/gold generators within this distance of a team spawn belong to that team
-no-build-radius: 2          # cannot place blocks this close to team spawns and generators (0 = off)
-tnt-fuse-ticks: 40          # TNT is primed instantly when placed
+
+respawn-delay: 5            
+invulnerable-seconds: 3     
+base-radius: 20             
+no-build-radius: 3          
+tnt-fuse-ticks: 40          
 fireball-yield: 2.0
-# Materials that TNT and fireballs cannot destroy. "_X" matches any material ending in X, otherwise exact name.
-magic-milk-seconds: 30        # how long Magic Milk makes you ignore enemy traps
-dream-defender-seconds: 180  # lifetime of a Dream Defender iron golem
-bridge-egg-ticks: 50         # how long a thrown Bridge Egg keeps building
+magic-milk-seconds: 30        
+dream-defender-seconds: 180  
+bridge-egg-ticks: 50         
 popup-tower-height: 5
-hologram:                    # floating timers above generators
+hologram:                    
   enabled: true
   types: [diamond, emerald]
   height: 2.4
 blast-proof: [GLASS, _STAINED_GLASS, END_STONE]
 armor-tiers: [LEATHER, CHAINMAIL, IRON, DIAMOND]   # leggings + boots upgrade through these tiers
 
-# Items every player receives on spawn / respawn. {color} = team dye colour (for coloured items).
 start-items:
   - {material: WOODEN_SWORD, unbreakable: true}
 
-# Resource generators. "intervals" = seconds between drops per tier (diamond/emerald tiers are raised by the
-# timeline in "events"; iron/gold only use the first value and are sped up by the Forge upgrade).
+
 generators:
   iron:    {material: IRON_INGOT, intervals: [1.5], amount: 1, max-stack: 48}
   gold:    {material: GOLD_INGOT, intervals: [6.0], amount: 1, max-stack: 16}
   diamond: {material: DIAMOND, intervals: [30, 23, 12], amount: 1, max-stack: 8}
   emerald: {material: EMERALD, intervals: [65, 50, 30], amount: 1, max-stack: 4}
 
-# Game timeline (seconds since start). actions: diamond-tier, emerald-tier (value = tier), destroy-beds, end-game
+
 events:
   - {time: 360,  action: diamond-tier, value: 2, name: "Diamond II", message: "<aqua>Diamond generators upgraded to <bold>Tier II<reset><aqua>!"}
   - {time: 720,  action: emerald-tier, value: 2, name: "Emerald II", message: "<green>Emerald generators upgraded to <bold>Tier II<reset><green>!"}
@@ -42,7 +35,7 @@ events:
   - {time: 1800, action: destroy-beds, name: "Bed Gone", message: "<red><bold>All beds were destroyed!"}
   - {time: 2400, action: end-game, name: "Game End", message: "<red>Time ran out!"}
 
-# Lucky Mode: diamond and emerald generators additionally drop a Lucky Block every <interval> seconds.
+
 lucky:
   block: SPONGE
   interval: 30
@@ -68,12 +61,9 @@ scoreboard:
   status-dead: "<red>✘"
   you: " <gray>YOU"
 
-# ---- Item shop ----------------------------------------------------------------------------------
-# cost: a single resource (iron, gold, diamond, emerald) and its amount. "{color}" in a material is replaced
-# by the buyer's team dye colour (e.g. "{color}_WOOL" -> RED_WOOL). type: armor + tier = permanent armour tier.
 shop:
   title: "<dark_gray>Item Shop"
-  quick-buy:                 # favourites page; shift-click any item to add/remove it (saved per player)
+  quick-buy:             
     enabled: true
     slot: 8
     default: [wool, stone-sword, chain, iron-pick, bow, speed, gapple, tnt, pearl, water]
@@ -154,12 +144,12 @@ shop:
         - {id: dream-defender, material: IRON_GOLEM_SPAWN_EGG, special: dream-defender, cost: {iron: 120}, name: "<white>Dream Defender", lore: ["<gray>An iron golem defends your base."]}
         - {id: lucky, material: SPONGE, lucky-block: true, cost: {emerald: 2}, name: "<yellow>Lucky Block", lore: ["<gray>Only works in blocks you place"]}
 
-# ---- Team upgrades -------------------------------------------------------------------------------
+
 upgrades:
   title: "<dark_gray>Team Upgrades"
-  trap-radius: 9            # an enemy this close to a team spawn triggers the first queued trap
-  trap-max: 3               # traps a team can queue
-  trap-costs: [1, 2, 4]     # diamonds for the 1st, 2nd, 3rd queued trap
+  trap-radius: 9           
+  trap-max: 3              
+  trap-costs: [1, 2, 4]     
   traps:
     its-a-trap:
       name: "<red>It's a Trap!"
@@ -183,7 +173,7 @@ upgrades:
       effects:
         - {type: mining_fatigue, seconds: 10, amplifier: 0}
   heal-pool-radius: 12
-  forge-multipliers: [1.0, 1.5, 2.0, 2.5, 3.0]   # index = Forge level
+  forge-multipliers: [1.0, 1.5, 2.0, 2.5, 3.0]   
   list:
     sharpness:
       slot: 10
