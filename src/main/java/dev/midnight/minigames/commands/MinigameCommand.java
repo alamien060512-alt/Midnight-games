@@ -539,7 +539,11 @@ public final class MinigameCommand implements CommandExecutor, TabCompleter {
                     return;
                 }
                 World w = plugin.getWorldService().getOrLoad(a[1]);
-                msg(sender, w == null ? "admin.world-missing" : "admin.world-loaded", "world", a[1]);
+                if (w == null) {
+                    msg(sender, "admin.world-load-failed", "world", a[1], "error", plugin.getWorldService().getLastError());
+                } else {
+                    msg(sender, "admin.world-loaded", "world", a[1]);
+                }
             }
             case "tp" -> {
                 if (!requirePlayer(sender) || a.length < 2) {

@@ -19,8 +19,6 @@ mvn package
 
 * `pom.xml` depends on `io.papermc.paper:paper-api:[26.3.build,)` (latest 26.3 build, exactly as the
   Paper docs recommend for Maven) and `me.clip:placeholderapi:2.11.6` (both `provided`).
-* **Required dependency: Multiverse-Core** (all arena worlds are loaded through it; the plugin will not start without it).
-  Use a Multiverse-Core build that supports Paper 26.3.
 * Soft dependencies: PlaceholderAPI, Vault. Neither is required.
 * SQLite and MySQL JDBC drivers are bundled with Paper itself, nothing is shaded.
 
@@ -118,14 +116,12 @@ so adding a game never adds a listener.
 4. Optional: PlaceholderAPI (`/papi reload` is not needed, the expansion registers itself), Vault
    (`economy.provider: vault`), MySQL (`database.type: mysql`).
 
-**Arena worlds (Multiverse-Core required).** Put the map folder in the server directory with a name that has no
-spaces (e.g. `bw_speedway`), then run `/minigame world load bw_speedway`. The plugin runs `mv load <name>` and, if
-Multiverse does not know the world yet, `mv import <name> normal`. Paper 26.x stores worlds under
-`<level>/dimensions/minecraft/<name>` and migrates classic top-level folders itself; both layouts are found. The same
-load happens automatically when an enabled arena needs a world that is not loaded yet (`worlds.auto-load: true`).
-`/minigame world create <name>` makes an empty void world (Skyblock-style games); follow it with
-`/mv import <name> normal` so Multiverse tracks it. If a world is missing, the console and the admin get the exact
-message and the arena is skipped, nothing crashes.
+**Arena worlds (no world plugin needed).** Put the map folder in the server directory with a **lowercase name
+without spaces** (e.g. `bw_speedway` - Paper 26.x identifies worlds by `minecraft:<name>`), then run
+`/minigame world load bw_speedway`. Paper migrates a classic top-level folder into `<level>/dimensions/minecraft/`
+itself; a world already in that folder loads too. A failed load prints the exact reason in chat and console. Enabled
+arenas load their world automatically when needed (`worlds.auto-load: true`). `/minigame world create <name>` makes an
+empty void world (Skyblock-style games). Multiverse is not required, but any world it loaded is usable as well.
 
 **Reset strategies** (`/minigame arena setreset <game> <arena> <mode>`):
 

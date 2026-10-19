@@ -68,31 +68,38 @@ public final class WorldService {
         return null;
     }
 
+    private String lastError = "";
+
+    /** Reason the last {@link #load(String)} call failed (empty when it did not fail). */
+    public String getLastError() {
+        return lastError;
+    }
+
     /**
-     * Loads a world through Multiverse-Core (required dependency): first {@code mv load}, and if the world is not
-     * known to Multiverse yet {@code mv import <name> normal}. Names must not contain spaces.
+     * Loads a world with the Bukkit API (no extra plugin needed). Paper 26.x identifies worlds by key
+     * {@code minecraft:<lowercase name>}, so use lowercase names without spaces. A classic top-level folder is
+     * migrated by Paper itself; worlds already in {@code <level>/dimensions/minecraft/<name>} load directly.
      */
     public World load(String name) {
-        if (!name.matches("[A-Za-z0-9_\\-.]+")) {
-            plugin.getLogger().severe("World name '" + name + "' is invalid for Multiverse (no spaces or special characters).");
+        lastError = "";
+        if (!name.matches("[a-z0-9_\\-.]+")) {
+            lastError = "World names must be lowercase letters, numbers, _ - . only (no spaces or capitals). Rename the folder, e.g. 'bw_speedway'.";
+            plugin.getLogger().severe("Cannot load world '" + name + "': " + lastError);
             return null;
         }
         if (!worldExistsOnDisk(name)) {
+            lastError = "No folder named '" + name + "' in the server directory or in <level>/dimensions/minecraft/.";
             return null;
         }
         try {
-            org.bukkit.command.CommandSender console = Bukkit.getConsoleSender();
-            Bukkit.dispatchCommand(console, "mv load " + name);
-            if (Bukkit.getWorld(name) == null) {
-                Bukkit.dispatchCommand(console, "mv import " + name + " normal");
-            }
-            World w = Bukkit.getWorld(name);
+            World w = new WorldCreator(name).createWorld();
             if (w == null) {
-                plugin.getLogger().severe("Multiverse could not load world '" + name + "'. Check the console output above.");
+                lastError = "Paper returned no world (see console).";
             }
             return w;
         } catch (Exception ex) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to load world '" + name + "' via Multiverse: " + ex.getMessage(), ex);
+            lastError = String.valueOf(ex.getMessage());
+            plugin.getLogger().log(Level.SEVERE, "Failed to load world '" + name + "': " + ex.getMessage(), ex);
             return null;
         }
     }

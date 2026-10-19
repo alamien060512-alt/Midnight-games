@@ -203,6 +203,7 @@ admin:
   world-list: "{prefix}<yellow>Loaded worlds: <white>{worlds}"
   world-created: "{prefix}<green>Void world <white>{world}<green> created."
   world-failed: "{prefix}<red>Could not create world <white>{world}<red> (see console)."
+  world-load-failed: "{prefix}<red>Could not load world <white>{world}<red>: {error}"
   world-loaded: "{prefix}<green>World <white>{world}<green> is loaded."
   stats: "{prefix}<yellow>{player}<gray>: wins <white>{wins}<gray>, losses <white>{losses}<gray>, kills <white>{kills}<gray>, deaths <white>{deaths}<gray>, coins <white>{coins}<gray>, played <white>{played}"
   coins-added: "{prefix}<green>Gave <white>{amount}<green> coins to <white>{player}<green>."
