@@ -35,6 +35,23 @@ public final class WorldService {
         return new File(Bukkit.getWorldContainer(), name);
     }
 
+    /**
+     * True when a world of that name exists on disk: either as a classic folder in the server directory
+     * (Paper migrates it automatically when it is loaded) or already inside the Paper 26.x layout
+     * {@code <level>/dimensions/minecraft/<name>}.
+     */
+    public boolean worldExistsOnDisk(String name) {
+        if (worldFolder(name).isDirectory()) {
+            return true;
+        }
+        if (!Bukkit.getWorlds().isEmpty()) {
+            File level = worldFolder(Bukkit.getWorlds().get(0).getName());
+            return new File(level, "dimensions/minecraft/" + name).isDirectory()
+                    || new File(level, "dimensions/minecraft/" + name.toLowerCase(java.util.Locale.ROOT)).isDirectory();
+        }
+        return false;
+    }
+
     /** Returns the loaded world, loading it from disk when allowed. Null when it does not exist. */
     public World getOrLoad(String name) {
         if (name == null || name.isBlank()) {
@@ -45,14 +62,14 @@ public final class WorldService {
             return w;
         }
         if (plugin.getConfigurationManager().config().getBoolean("worlds.auto-load", true)
-                && worldFolder(name).isDirectory()) {
+                && worldExistsOnDisk(name)) {
             return load(name);
         }
         return null;
     }
 
     public World load(String name) {
-        if (!worldFolder(name).isDirectory()) {
+        if (!worldExistsOnDisk(name)) {
             return null;
         }
         try {

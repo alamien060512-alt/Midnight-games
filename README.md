@@ -117,7 +117,7 @@ so adding a game never adds a listener.
    (`economy.provider: vault`), MySQL (`database.type: mysql`).
 
 Arena worlds: put the map folder in the server directory (it is loaded on demand, `worlds.auto-load: true`) or use
-`/minigame world load <name>`. `/minigame world create <name>` makes an empty void world (Skyblock-style games).
+`/minigame world load <name>` (Paper 26.x stores worlds under `<level>/dimensions/minecraft/<name>`; a classic top-level folder is migrated by Paper automatically, and both layouts are found). **Use names without spaces** (e.g. `bw_speedway`), commands cannot take spaces. `/minigame world create <name>` makes an empty void world (Skyblock-style games).
 If a world is missing the console and the admin get the exact message; the arena is skipped, nothing crashes.
 
 **Reset strategies** (`/minigame arena setreset <game> <arena> <mode>`):
