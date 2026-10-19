@@ -120,6 +120,15 @@ public interface PlayerContext {
         return false;
     }
 
+    default void onProjectileLaunch(Player shooter, org.bukkit.event.entity.ProjectileLaunchEvent e) {
+    }
+
+    default void onProjectileHit(Player shooter, org.bukkit.event.entity.ProjectileHitEvent e) {
+    }
+
+    default void onConsume(Player player, org.bukkit.event.player.PlayerItemConsumeEvent e) {
+    }
+
     default void onExplode(EntityExplodeEvent e) {
     }
 }

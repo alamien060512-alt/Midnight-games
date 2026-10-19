@@ -10,6 +10,8 @@ public final class Keys {
     public static NamespacedKey SHOP;
     public static NamespacedKey LUCKY;
     public static NamespacedKey GENERATOR;
+    /** Marks special shop items (bridge-egg, popup-tower, dream-defender...). */
+    public static NamespacedKey SPECIAL;
 
     private Keys() {
     }
@@ -19,5 +21,6 @@ public final class Keys {
         SHOP = new NamespacedKey(plugin, "shop");
         LUCKY = new NamespacedKey(plugin, "lucky");
         GENERATOR = new NamespacedKey(plugin, "generator");
+        SPECIAL = new NamespacedKey(plugin, "special");
     }
 }

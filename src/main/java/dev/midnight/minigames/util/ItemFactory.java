@@ -107,6 +107,9 @@ public final class ItemFactory {
                 lm.setColor(c);
             }
         }
+        if (s.contains("special")) {
+            meta.getPersistentDataContainer().set(Keys.SPECIAL, PersistentDataType.STRING, s.getString("special"));
+        }
         if (s.contains("action")) {
             meta.getPersistentDataContainer().set(Keys.ACTION, PersistentDataType.STRING, s.getString("action"));
         }

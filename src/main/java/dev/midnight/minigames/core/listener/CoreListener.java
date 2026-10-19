@@ -392,6 +392,34 @@ public final class CoreListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onLaunch(org.bukkit.event.entity.ProjectileLaunchEvent e) {
+        if (e.getEntity().getShooter() instanceof Player p) {
+            PlayerContext c = ctx(p);
+            if (c != null) {
+                c.onProjectileLaunch(p, e);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onProjectileHit(org.bukkit.event.entity.ProjectileHitEvent e) {
+        if (e.getEntity().getShooter() instanceof Player p) {
+            PlayerContext c = ctx(p);
+            if (c != null) {
+                c.onProjectileHit(p, e);
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onConsume(org.bukkit.event.player.PlayerItemConsumeEvent e) {
+        PlayerContext c = ctx(e.getPlayer());
+        if (c != null) {
+            c.onConsume(e.getPlayer(), e);
+        }
+    }
+
     // ---- inventories (menus) ------------------------------------------------------------------------------------
 
     @EventHandler(priority = EventPriority.HIGHEST)

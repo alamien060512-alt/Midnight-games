@@ -10,6 +10,14 @@ no-build-radius: 2          # cannot place blocks this close to team spawns and 
 tnt-fuse-ticks: 40          # TNT is primed instantly when placed
 fireball-yield: 2.0
 # Materials that TNT and fireballs cannot destroy. "_X" matches any material ending in X, otherwise exact name.
+magic-milk-seconds: 30        # how long Magic Milk makes you ignore enemy traps
+dream-defender-seconds: 180  # lifetime of a Dream Defender iron golem
+bridge-egg-ticks: 50         # how long a thrown Bridge Egg keeps building
+popup-tower-height: 5
+hologram:                    # floating timers above generators
+  enabled: true
+  types: [diamond, emerald]
+  height: 2.4
 blast-proof: [GLASS, _STAINED_GLASS, END_STONE]
 armor-tiers: [LEATHER, CHAINMAIL, IRON, DIAMOND]   # leggings + boots upgrade through these tiers
 
@@ -65,6 +73,10 @@ scoreboard:
 # by the buyer's team dye colour (e.g. "{color}_WOOL" -> RED_WOOL). type: armor + tier = permanent armour tier.
 shop:
   title: "<dark_gray>Item Shop"
+  quick-buy:                 # favourites page; shift-click any item to add/remove it (saved per player)
+    enabled: true
+    slot: 8
+    default: [wool, stone-sword, chain, iron-pick, bow, speed, gapple, tnt, pearl, water]
   categories:
     - id: blocks
       slot: 0
@@ -132,12 +144,40 @@ shop:
         - {id: pearl, material: ENDER_PEARL, cost: {emerald: 4}, name: "<white>Ender Pearl"}
         - {id: water, material: WATER_BUCKET, cost: {gold: 3}, name: "<white>Water Bucket"}
         - {id: sponge, material: SPONGE, amount: 4, cost: {gold: 3}, name: "<white>Sponge"}
-        # TODO (not implemented yet): bridge egg, pop-up tower, magic milk, dream defender, traps.
+        - {id: bridge-egg, material: EGG, special: bridge-egg, cost: {gold: 4}, name: "<white>Bridge Egg", lore: ["<gray>Throw it to build a wool bridge."]}
+        - {id: popup-tower, material: CHEST, special: popup-tower, cost: {iron: 24}, name: "<white>Pop-up Tower", lore: ["<gray>Place it to build a ladder tower."]}
+        - {id: magic-milk, material: MILK_BUCKET, cost: {gold: 4}, name: "<white>Magic Milk", lore: ["<gray>Enemy traps ignore you for 30s."]}
+        - {id: dream-defender, material: IRON_GOLEM_SPAWN_EGG, special: dream-defender, cost: {iron: 120}, name: "<white>Dream Defender", lore: ["<gray>An iron golem defends your base."]}
         - {id: lucky, material: SPONGE, lucky-block: true, cost: {emerald: 2}, name: "<yellow>Lucky Block", lore: ["<gray>Only works in blocks you place"]}
 
 # ---- Team upgrades -------------------------------------------------------------------------------
 upgrades:
   title: "<dark_gray>Team Upgrades"
+  trap-radius: 9            # an enemy this close to a team spawn triggers the first queued trap
+  trap-max: 3               # traps a team can queue
+  trap-costs: [1, 2, 4]     # diamonds for the 1st, 2nd, 3rd queued trap
+  traps:
+    its-a-trap:
+      name: "<red>It's a Trap!"
+      target: enemy
+      effects:
+        - {type: blindness, seconds: 8, amplifier: 0}
+        - {type: slowness, seconds: 8, amplifier: 0}
+    counter-offensive:
+      name: "<green>Counter-Offensive Trap"
+      target: team
+      effects:
+        - {type: speed, seconds: 15, amplifier: 1}
+        - {type: jump_boost, seconds: 15, amplifier: 1}
+    alarm:
+      name: "<yellow>Alarm Trap"
+      target: enemy
+      reveal: true
+    miner-fatigue:
+      name: "<gold>Miner Fatigue Trap"
+      target: enemy
+      effects:
+        - {type: mining_fatigue, seconds: 10, amplifier: 0}
   heal-pool-radius: 12
   forge-multipliers: [1.0, 1.5, 2.0, 2.5, 3.0]   # index = Forge level
   list:
@@ -188,4 +228,35 @@ upgrades:
       currency: diamond
       tiers:
         - {cost: 1}
-    # TODO (not implemented yet): traps (It's a Trap!, Counter-Offensive, Alarm, Miner Fatigue).
+    trap-its-a-trap:
+      slot: 19
+      type: trap
+      trap: its-a-trap
+      material: TRIPWIRE_HOOK
+      name: "<yellow>It's a Trap!"
+      lore: ["<gray>The next enemy to enter your base", "<gray>gets Blindness and Slowness."]
+      currency: diamond
+    trap-counter:
+      slot: 20
+      type: trap
+      trap: counter-offensive
+      material: FEATHER
+      name: "<yellow>Counter-Offensive Trap"
+      lore: ["<gray>Your team gets Speed and Jump Boost", "<gray>when an enemy enters your base."]
+      currency: diamond
+    trap-alarm:
+      slot: 21
+      type: trap
+      trap: alarm
+      material: REDSTONE_TORCH
+      name: "<yellow>Alarm Trap"
+      lore: ["<gray>Reveals invisible enemies and makes", "<gray>the intruder glow."]
+      currency: diamond
+    trap-miner-fatigue:
+      slot: 22
+      type: trap
+      trap: miner-fatigue
+      material: IRON_PICKAXE
+      name: "<yellow>Miner Fatigue Trap"
+      lore: ["<gray>The next enemy to enter your base", "<gray>gets Mining Fatigue."]
+      currency: diamond

@@ -31,6 +31,16 @@ import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Egg;
+import org.bukkit.entity.IronGolem;
+import org.bukkit.entity.TextDisplay;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.type.Ladder;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.Registry;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Display;
+import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
@@ -81,6 +91,13 @@ final class BedWarsGame extends GameInstance {
     private final List<String> armorMaterials;
     private LootTable luckyTable;
     private Material luckyMaterial;
+
+    private final Map<UUID, Integer> trapImmuneUntil = new HashMap<>();
+    private final Map<String, Integer> trapReadyAt = new HashMap<>();
+    private final Set<UUID> pendingBridge = new HashSet<>();
+    private final Map<UUID, Integer> golemExpiry = new HashMap<>();
+    private final Map<UUID, GameTeam> golemTeam = new HashMap<>();
+    private final Map<Generator, UUID> holograms = new HashMap<>();
 
     private int diamondTier = 1;
     private int emeraldTier = 1;
@@ -158,6 +175,8 @@ final class BedWarsGame extends GameInstance {
             }
             createGenerator(type, l, allTeams);
         }
+
+        spawnHolograms();
 
         // Shops
         spawnShops("item");
@@ -509,6 +528,9 @@ final class BedWarsGame extends GameInstance {
             }
             g.tick(tier, mult);
         }
+        updateHolograms();
+        checkTraps();
+        manageGolems();
         if (lucky) {
             int every = Math.max(5, cfg.getInt("lucky.interval", 30));
             if (++luckyTimer >= every) {
@@ -796,6 +818,11 @@ final class BedWarsGame extends GameInstance {
         if (e.isCancelled()) {
             return;
         }
+        if ("popup-tower".equals(ItemFactory.readTag(e.getItemInHand(), Keys.SPECIAL))) {
+            e.setCancelled(true);
+            buildTower(player, e);
+            return;
+        }
         Block placed = e.getBlockPlaced();
         double radius = cfg.getDouble("no-build-radius", 2.0);
         if (radius > 0) {
@@ -861,6 +888,20 @@ final class BedWarsGame extends GameInstance {
         if (e.isCancelled() || e.getHand() != EquipmentSlot.HAND) {
             return;
         }
+        if ((e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && e.getItem() != null) {
+            String special = ItemFactory.readTag(e.getItem(), Keys.SPECIAL);
+            if ("bridge-egg".equals(special)) {
+                pendingBridge.add(player.getUniqueId());
+                Bukkit.getScheduler().runTaskLater(plugin, () -> pendingBridge.remove(player.getUniqueId()), 3L);
+                return;
+            }
+            if ("dream-defender".equals(special)) {
+                e.setCancelled(true);
+                e.getItem().setAmount(e.getItem().getAmount() - 1);
+                spawnGolem(player);
+                return;
+            }
+        }
         if ((e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK)
                 && e.getItem() != null && e.getItem().getType() == Material.FIRE_CHARGE) {
             e.setCancelled(true);
@@ -899,6 +940,21 @@ final class BedWarsGame extends GameInstance {
             }
         }
         shopEntities.clear();
+        for (UUID id : holograms.values()) {
+            Entity en = Bukkit.getEntity(id);
+            if (en != null) {
+                en.remove();
+            }
+        }
+        holograms.clear();
+        for (UUID id : new ArrayList<>(golemExpiry.keySet())) {
+            Entity en = Bukkit.getEntity(id);
+            if (en != null) {
+                en.remove();
+            }
+        }
+        golemExpiry.clear();
+        golemTeam.clear();
         World w = world();
         if (w != null) {
             // Remove dropped resources left by generators so they never leak into the next game.
@@ -908,6 +964,280 @@ final class BedWarsGame extends GameInstance {
                         en.remove();
                     }
                 }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------
+    // Traps
+    // ------------------------------------------------------------------------------------------------
+
+    int trapMax() {
+        return cfg.getInt("upgrades.trap-max", 3);
+    }
+
+    int trapCost(TeamState st) {
+        List<Integer> costs = cfg.getIntegerList("upgrades.trap-costs");
+        if (costs.isEmpty()) {
+            return 1;
+        }
+        return costs.get(Math.min(st.traps.size(), costs.size() - 1));
+    }
+
+    private String trapName(String id) {
+        return TextUtil.plain(TextUtil.parse(cfg.getString("upgrades.traps." + id + ".name", id)));
+    }
+
+    boolean buyTrap(Player p, ConfigurationSection def) {
+        GameTeam team = teamByPlayer.get(p.getUniqueId());
+        TeamState st = team == null ? null : states.get(team.getId());
+        if (st == null || state != GameState.IN_GAME) {
+            return false;
+        }
+        if (st.traps.size() >= trapMax()) {
+            plugin.getMessages().send(p, "bedwars.trap-full", "max", String.valueOf(trapMax()));
+            return false;
+        }
+        String currency = def.getString("currency", "diamond");
+        Material cm = resourceMaterial(currency);
+        int cost = trapCost(st);
+        if (cm == null || count(p, cm) < cost) {
+            plugin.getMessages().send(p, "bedwars.not-enough", "resource", resourceName(currency));
+            plugin.getEffects().play(p, "shop-fail");
+            return false;
+        }
+        take(p, cm, cost);
+        st.traps.add(def.getString("trap", "its-a-trap"));
+        plugin.getEffects().play(p, "shop-buy");
+        broadcastTeam(team, "bedwars.trap-queued", "player", p.getName(), "trap", trapName(def.getString("trap", "")),
+                "count", String.valueOf(st.traps.size()), "max", String.valueOf(trapMax()));
+        return true;
+    }
+
+    private void checkTraps() {
+        double radius = cfg.getDouble("upgrades.trap-radius", 9.0);
+        for (GameTeam team : teams.values()) {
+            TeamState st = states.get(team.getId());
+            if (st == null || st.traps.isEmpty() || elapsed < trapReadyAt.getOrDefault(team.getId(), 0)) {
+                continue;
+            }
+            for (UUID id : players) {
+                if (team.hasMember(id) || respawning.containsKey(id) || elapsed < trapImmuneUntil.getOrDefault(id, 0)) {
+                    continue;
+                }
+                Player intruder = Bukkit.getPlayer(id);
+                if (intruder != null && intruder.getWorld() == team.getSpawn().getWorld()
+                        && intruder.getLocation().distanceSquared(team.getSpawn()) <= radius * radius) {
+                    triggerTrap(team, st, intruder);
+                    break;
+                }
+            }
+        }
+    }
+
+    private PotionEffectType effectType(String key) {
+        NamespacedKey nk = NamespacedKey.fromString(key.toLowerCase(Locale.ROOT));
+        return nk == null ? null : Registry.EFFECT.get(nk);
+    }
+
+    private void applyEffects(Player p, ConfigurationSection trap) {
+        for (ConfigurationSection fx : ConfigUtil.sections(trap, "effects")) {
+            PotionEffectType type = effectType(fx.getString("type", ""));
+            if (type == null) {
+                plugin.getLogger().warning("[config] games/bedwars.yml -> upgrades.traps: unknown effect '" + fx.getString("type") + "'");
+                continue;
+            }
+            p.addPotionEffect(new PotionEffect(type, fx.getInt("seconds", 8) * 20, fx.getInt("amplifier", 0), true, true));
+        }
+    }
+
+    private void triggerTrap(GameTeam team, TeamState st, Player intruder) {
+        String id = st.traps.remove(0);
+        trapReadyAt.put(team.getId(), elapsed + 5);
+        ConfigurationSection trap = cfg.getConfigurationSection("upgrades.traps." + id);
+        if (trap == null) {
+            return;
+        }
+        broadcastTeam(team, "bedwars.trap-triggered", "trap", trapName(id), "player", coloredName(intruder));
+        plugin.getMessages().titleAll(online(team.getMembers()), "trap");
+        plugin.getEffects().play(intruder, "event");
+        if (trap.getString("target", "enemy").equals("team")) {
+            for (Player m : online(team.getMembers())) {
+                if (players.contains(m.getUniqueId()) && !respawning.containsKey(m.getUniqueId())) {
+                    applyEffects(m, trap);
+                }
+            }
+        } else {
+            applyEffects(intruder, trap);
+        }
+        if (trap.getBoolean("reveal", false)) {
+            intruder.removePotionEffect(PotionEffectType.INVISIBILITY);
+            intruder.addPotionEffect(new PotionEffect(PotionEffectType.GLOWING, 200, 0, true, false));
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------
+    // Magic milk, dream defender, bridge egg, pop-up tower
+    // ------------------------------------------------------------------------------------------------
+
+    @Override
+    public void onConsume(Player player, org.bukkit.event.player.PlayerItemConsumeEvent e) {
+        if (e.getItem().getType() == Material.MILK_BUCKET && state == GameState.IN_GAME && players.contains(player.getUniqueId())) {
+            int secs = cfg.getInt("magic-milk-seconds", 30);
+            trapImmuneUntil.put(player.getUniqueId(), elapsed + secs);
+            plugin.getMessages().send(player, "bedwars.milk-drunk", "seconds", String.valueOf(secs));
+        }
+    }
+
+    private void spawnGolem(Player owner) {
+        GameTeam team = teamByPlayer.get(owner.getUniqueId());
+        if (team == null) {
+            return;
+        }
+        int secs = cfg.getInt("dream-defender-seconds", 180);
+        IronGolem g = owner.getWorld().spawn(owner.getLocation(), IronGolem.class, golem -> {
+            golem.setPlayerCreated(true);
+            golem.customName(TextUtil.parse(team.getColoredName() + " Defender"));
+            golem.setCustomNameVisible(true);
+            golem.setPersistent(false);
+            golem.setRemoveWhenFarAway(false);
+        });
+        golemExpiry.put(g.getUniqueId(), elapsed + secs);
+        golemTeam.put(g.getUniqueId(), team);
+        plugin.getMessages().send(owner, "bedwars.golem-spawned", "seconds", String.valueOf(secs));
+    }
+
+    private void manageGolems() {
+        if (golemExpiry.isEmpty()) {
+            return;
+        }
+        for (UUID id : new ArrayList<>(golemExpiry.keySet())) {
+            Entity en = Bukkit.getEntity(id);
+            if (!(en instanceof IronGolem golem) || !golem.isValid() || elapsed >= golemExpiry.get(id)) {
+                if (en != null) {
+                    en.remove();
+                }
+                golemExpiry.remove(id);
+                golemTeam.remove(id);
+                continue;
+            }
+            GameTeam own = golemTeam.get(id);
+            Player nearest = null;
+            double best = 16.0 * 16.0;
+            for (UUID pid : players) {
+                Player p = Bukkit.getPlayer(pid);
+                if (p == null || (own != null && own.hasMember(pid)) || respawning.containsKey(pid) || p.getWorld() != golem.getWorld()) {
+                    continue;
+                }
+                double d = p.getLocation().distanceSquared(golem.getLocation());
+                if (d < best) {
+                    best = d;
+                    nearest = p;
+                }
+            }
+            golem.setTarget(nearest);
+        }
+    }
+
+    @Override
+    public void onProjectileLaunch(Player shooter, org.bukkit.event.entity.ProjectileLaunchEvent e) {
+        GameTeam team = teamByPlayer.get(shooter.getUniqueId());
+        if (team == null || team.getColor() == null || !(e.getEntity() instanceof Egg egg)
+                || !pendingBridge.remove(shooter.getUniqueId())) {
+            return;
+        }
+        Material wool = team.getColor().material("WOOL");
+        if (wool == null) {
+            wool = Material.WHITE_WOOL;
+        }
+        final Material mat = wool;
+        final int maxTicks = cfg.getInt("bridge-egg-ticks", 50);
+        new BukkitRunnable() {
+            int ticks = 0;
+
+            @Override
+            public void run() {
+                if (!egg.isValid() || ++ticks > maxTicks || state != GameState.IN_GAME) {
+                    cancel();
+                    return;
+                }
+                Block below = egg.getLocation().getBlock().getRelative(BlockFace.DOWN);
+                org.bukkit.util.Vector v = egg.getVelocity();
+                boolean alongX = Math.abs(v.getX()) >= Math.abs(v.getZ());
+                placeTracked(below, mat);
+                placeTracked(below.getRelative(alongX ? 0 : 1, 0, alongX ? 1 : 0), mat);
+                placeTracked(below.getRelative(alongX ? 0 : -1, 0, alongX ? -1 : 0), mat);
+            }
+        }.runTaskTimer(plugin, 1L, 1L);
+    }
+
+    /** Pop-up tower: a small ladder tower with a door facing the player, built from team wool in front of them. */
+    private void buildTower(Player player, BlockPlaceEvent e) {
+        GameTeam team = teamByPlayer.get(player.getUniqueId());
+        if (team == null || team.getColor() == null) {
+            return;
+        }
+        BlockFace f = player.getFacing();
+        if (f.getModY() != 0 || f.getModX() * f.getModZ() != 0) {
+            f = BlockFace.NORTH;
+        }
+        Material wool = team.getColor().material("WOOL");
+        if (wool == null) {
+            wool = Material.WHITE_WOOL;
+        }
+        int height = Math.max(3, cfg.getInt("popup-tower-height", 5));
+        Block center = e.getBlockPlaced().getRelative(f);
+        for (int y = 0; y < height; y++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                for (int dz = -1; dz <= 1; dz++) {
+                    Block b = center.getRelative(dx, y, dz);
+                    if (dx == 0 && dz == 0) {
+                        if (placeTracked(b, Material.LADDER) && b.getBlockData() instanceof Ladder ladder) {
+                            ladder.setFacing(f.getOppositeFace());
+                            b.setBlockData(ladder, false);
+                        }
+                    } else if (y > 1 || dx != -f.getModX() || dz != -f.getModZ()) {
+                        placeTracked(b, wool); // the cell facing the player stays open as the door (2 high)
+                    }
+                }
+            }
+        }
+        ItemStack hand = player.getInventory().getItem(e.getHand());
+        if (hand != null) {
+            hand.setAmount(hand.getAmount() - 1);
+        }
+    }
+
+    // ------------------------------------------------------------------------------------------------
+    // Generator holograms
+    // ------------------------------------------------------------------------------------------------
+
+    private void spawnHolograms() {
+        List<String> types = cfg.getStringList("hologram.types");
+        if (types.isEmpty() || !cfg.getBoolean("hologram.enabled", true)) {
+            return;
+        }
+        for (Generator g : generators) {
+            if (!types.contains(g.type) || g.location.getWorld() == null) {
+                continue;
+            }
+            TextDisplay td = g.location.getWorld().spawn(g.location.clone().add(0.5, cfg.getDouble("hologram.height", 2.4), 0.5), TextDisplay.class, d -> {
+                d.setBillboard(Display.Billboard.CENTER);
+                d.setPersistent(false);
+                d.text(Component.text(" "));
+            });
+            holograms.put(g, td.getUniqueId());
+        }
+    }
+
+    private void updateHolograms() {
+        for (Map.Entry<Generator, UUID> en : holograms.entrySet()) {
+            Entity ent = Bukkit.getEntity(en.getValue());
+            if (ent instanceof TextDisplay td) {
+                Generator g = en.getKey();
+                int tier = g.type.equals("diamond") ? diamondTier : g.type.equals("emerald") ? emeraldTier : 1;
+                td.text(plugin.getMessages().get("bedwars.hologram." + g.type, "tier", String.valueOf(tier),
+                        "seconds", String.valueOf(g.secondsLeft(tier, 1.0))));
             }
         }
     }

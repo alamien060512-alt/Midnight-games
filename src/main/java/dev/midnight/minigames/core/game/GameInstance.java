@@ -175,6 +175,17 @@ public abstract class GameInstance implements PlayerContext {
         return false;
     }
 
+    /** Places a block programmatically (bridge egg, towers, cages): only into air, tracked so the arena resets. */
+    protected boolean placeTracked(org.bukkit.block.Block b, org.bukkit.Material m) {
+        if (!b.getType().isAir()) {
+            return false;
+        }
+        blocks.record(b);
+        b.setType(m, false);
+        blocks.markPlaced(b);
+        return true;
+    }
+
     /** Remembers the original state of a block changed by something other than a player click (liquids, TNT, fire...). */
     public void trackChange(org.bukkit.block.Block block) {
         if (state == GameState.IN_GAME) {

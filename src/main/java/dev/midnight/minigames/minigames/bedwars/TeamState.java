@@ -9,6 +9,8 @@ final class TeamState {
     int forge;
     int haste;
     boolean healPool;
+    /** Queued traps (ids from games/bedwars.yml -> upgrades.traps), triggered first-in-first-out. */
+    final java.util.List<String> traps = new java.util.ArrayList<>();
 
     int level(String upgradeId) {
         return switch (upgradeId) {

@@ -34,6 +34,12 @@ final class Generator {
         this.amount = Math.max(1, amount);
     }
 
+    /** Seconds until the next drop (for holograms). */
+    int secondsLeft(int tier, double speedMultiplier) {
+        double interval = intervals.get(Math.min(Math.max(tier, 1), intervals.size()) - 1);
+        return (int) Math.max(0, Math.ceil((1.0 - progress) * interval / Math.max(0.1, speedMultiplier)));
+    }
+
     /** Advances one second. Returns true when items were spawned. */
     boolean tick(int tier, double speedMultiplier) {
         double interval = intervals.get(Math.min(Math.max(tier, 1), intervals.size()) - 1);

@@ -380,7 +380,7 @@ Events (Bukkit events, main thread): `MinigameJoinEvent` (cancellable), `Minigam
 
 ## 12. Known limitations / TODO (nothing here is faked – these are simply not implemented)
 
-* **BedWars**: traps, bridge egg, pop-up tower, magic milk, dream defender, tool tiers/downgrades, generator holograms,
+* **BedWars**: tool-tier downgrades only.
   quick-buy, Beds are only protected from explosions because they are not player-placed.
 * **SkyWars**: no cages (players are frozen for `freeze-seconds` instead), no border shrink / deathmatch phase.
 * **Spleef**: shovel only (snowball/TNT spleef not implemented).

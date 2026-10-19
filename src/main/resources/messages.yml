@@ -92,6 +92,9 @@ titles:
   eliminated:
     title: "<red><bold>ELIMINATED"
     subtitle: "<gray>You are now spectating"
+  trap:
+    title: "<red><bold>TRAP TRIGGERED!"
+    subtitle: "<gray>An enemy entered your base"
   respawning:
     title: "<red>You died!"
     subtitle: "<gray>Respawning in <yellow>{seconds}"
@@ -230,6 +233,21 @@ bedwars:
   not-enough: "{prefix}<red>You do not have enough {resource}<red>."
   already-owned: "{prefix}<red>You already own that."
   purchased: "{prefix}<green>Purchased <white>{item}<green>."
+  hologram:
+    diamond: "<aqua><bold>Diamond\n<yellow>Tier {tier}\n<gray>Spawns in <white>{seconds}s"
+    emerald: "<green><bold>Emerald\n<yellow>Tier {tier}\n<gray>Spawns in <white>{seconds}s"
+    iron: "<white><bold>Iron\n<gray>{seconds}s"
+    gold: "<gold><bold>Gold\n<gray>{seconds}s"
+  quick-buy-name: "<yellow><bold>Quick Buy"
+  quick-buy-lore: "<gray>Your favourite items. Shift-click any item to add or remove it."
+  quick-buy-add: "<yellow>Shift-click: add to Quick Buy"
+  quick-buy-remove: "<yellow>Shift-click: remove from Quick Buy"
+  trap-queued: "{prefix}<green>{player} queued the trap <white>{trap}<green> ({count}/{max})."
+  trap-full: "{prefix}<red>Your team already has {max} traps queued."
+  trap-triggered: "{prefix}<red><bold>TRAP TRIGGERED! <reset><gray>{trap}<gray> was set off by {player}<gray>!"
+  trap-queue-lore: "<gray>Queued traps: <white>{count}/{max}"
+  milk-drunk: "{prefix}<green>Magic Milk! Enemy traps ignore you for {seconds}s."
+  golem-spawned: "{prefix}<green>Your Dream Defender will fight for {seconds}s."
   upgrade-maxed: "<green>Maximum level reached"
   upgrade-bought: "{prefix}<green>{player} purchased <white>{upgrade}<green> (level {level})."
   loot: "{prefix}<gray>+{amount} {resource}"

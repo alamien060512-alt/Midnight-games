@@ -30,7 +30,7 @@ final class UpgradeMenu extends MenuHolder {
         this.plugin = plugin;
         this.game = game;
         YamlConfiguration cfg = plugin.getConfigurationManager().game("bedwars");
-        this.inventory = Bukkit.createInventory(this, 27, TextUtil.parse(cfg.getString("upgrades.title", "<dark_gray>Team Upgrades")));
+        this.inventory = Bukkit.createInventory(this, 36, TextUtil.parse(cfg.getString("upgrades.title", "<dark_gray>Team Upgrades")));
         render(player);
     }
 
@@ -48,6 +48,25 @@ final class UpgradeMenu extends MenuHolder {
         }
         for (ConfigurationSection def : ConfigUtil.sections(upgrades, "list")) {
             String id = def.getString("id");
+            if ("trap".equals(def.getString("type"))) {
+                ItemStack trapItem = ItemFactory.build(def);
+                ItemMeta tm = trapItem.getItemMeta();
+                List<net.kyori.adventure.text.Component> tl = tm.lore() == null ? new ArrayList<>() : new ArrayList<>(tm.lore());
+                tl.add(TextUtil.item(plugin.getMessages().text("bedwars.trap-queue-lore", "count", String.valueOf(state.traps.size()),
+                        "max", String.valueOf(game.trapMax()))));
+                if (state.traps.size() < game.trapMax()) {
+                    tl.add(TextUtil.item(plugin.getMessages().text("bedwars.shop-cost", "amount", String.valueOf(game.trapCost(state)),
+                            "resource", game.resourceName(def.getString("currency", "diamond")))));
+                }
+                tm.lore(tl);
+                trapItem.setItemMeta(tm);
+                int trapSlot = def.getInt("slot", 19);
+                if (trapSlot >= 0 && trapSlot < inventory.getSize()) {
+                    inventory.setItem(trapSlot, trapItem);
+                    bySlot.put(trapSlot, def);
+                }
+                continue;
+            }
             List<ConfigurationSection> tiers = ConfigUtil.sections(def, "tiers");
             int level = state.level(id);
             ItemStack item = ItemFactory.build(def, "level", String.valueOf(level), "max", String.valueOf(tiers.size()));
@@ -78,7 +97,7 @@ final class UpgradeMenu extends MenuHolder {
     @Override
     public void onClick(Player player, InventoryClickEvent event) {
         ConfigurationSection def = bySlot.get(event.getRawSlot());
-        if (def != null && game.buyUpgrade(player, def)) {
+        if (def != null && ("trap".equals(def.getString("type")) ? game.buyTrap(player, def) : game.buyUpgrade(player, def))) {
             render(player);
         }
     }
