@@ -12,7 +12,6 @@ One plugin, ten built-in minigames, and a small core you can extend with your ow
 ## 1. Build
 
 ```bash
-# Multiverse-Core is a REQUIRED dependency (worlds are loaded through it)
 # JDK 25 required (Paper 26.x requires Java 25)
 mvn package
 # -> target/MidnightMinigames-1.0.0.jar   (drop into plugins/)
@@ -20,6 +19,8 @@ mvn package
 
 * `pom.xml` depends on `io.papermc.paper:paper-api:[26.3.build,)` (latest 26.3 build, exactly as the
   Paper docs recommend for Maven) and `me.clip:placeholderapi:2.11.6` (both `provided`).
+* **Required dependency: Multiverse-Core** (all arena worlds are loaded through it; the plugin will not start without it).
+  Use a Multiverse-Core build that supports Paper 26.3.
 * Soft dependencies: PlaceholderAPI, Vault. Neither is required.
 * SQLite and MySQL JDBC drivers are bundled with Paper itself, nothing is shaded.
 
@@ -117,9 +118,14 @@ so adding a game never adds a listener.
 4. Optional: PlaceholderAPI (`/papi reload` is not needed, the expansion registers itself), Vault
    (`economy.provider: vault`), MySQL (`database.type: mysql`).
 
-Arena worlds: put the map folder in the server directory (it is loaded on demand, `worlds.auto-load: true`) or use
-`/minigame world load <name>` (Paper 26.x stores worlds under `<level>/dimensions/minecraft/<name>`; a classic top-level folder is migrated by Paper automatically, and both layouts are found). **Use names without spaces** (e.g. `bw_speedway`), commands cannot take spaces. `/minigame world create <name>` makes an empty void world (Skyblock-style games).
-If a world is missing the console and the admin get the exact message; the arena is skipped, nothing crashes.
+**Arena worlds (Multiverse-Core required).** Put the map folder in the server directory with a name that has no
+spaces (e.g. `bw_speedway`), then run `/minigame world load bw_speedway`. The plugin runs `mv load <name>` and, if
+Multiverse does not know the world yet, `mv import <name> normal`. Paper 26.x stores worlds under
+`<level>/dimensions/minecraft/<name>` and migrates classic top-level folders itself; both layouts are found. The same
+load happens automatically when an enabled arena needs a world that is not loaded yet (`worlds.auto-load: true`).
+`/minigame world create <name>` makes an empty void world (Skyblock-style games); follow it with
+`/mv import <name> normal` so Multiverse tracks it. If a world is missing, the console and the admin get the exact
+message and the arena is skipped, nothing crashes.
 
 **Reset strategies** (`/minigame arena setreset <game> <arena> <mode>`):
 
@@ -354,7 +360,7 @@ MidnightMinigamesAPI.registerMinigame(myGame);                   // plug in your
 ```
 Events (Bukkit events, main thread): `MinigameJoinEvent` (cancellable), `MinigameLeaveEvent`, `MinigameStartEvent`,
 `MinigameEndEvent`, `PlayerEliminateEvent`, `ArenaResetEvent`. Add `compileOnly files("MidnightMinigames.jar")` and
-`softdepend: [MidnightMinigames]`.
+`depend: [MidnightMinigames]` (or `softdepend`).
 
 ### Adding a new minigame
 
