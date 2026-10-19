@@ -1,9 +1,4 @@
-# ======================================================================================
-#  OneBlock - games/oneblock.yml
-#  Setup is the same as Skyblock (void world, arena "main", hub spawn, enable).
-#  Commands: /oneblock create, home, sethome, invite, accept, kick, leave, delete, info, phase, reset.
-#  The island centre block is the OneBlock; it regenerates from the current phase's block table.
-# ======================================================================================
+
 island:
   spacing: 200
   center-y: 64
@@ -15,7 +10,7 @@ island:
   clear-up: 40
   clear-blocks-per-tick: 4000
 
-# Layers must use dy <= -1: the OneBlock itself sits at dy 0.
+
 template:
   use-structure-file: true
   structure-file: island.nbt
@@ -29,7 +24,7 @@ reset:
   clear-down: 6
   clear-up: 30
 
-# Default loot for chest events (phases can override with their own chest-loot).
+
 chest-loot:
   rolls: 3-5
   items:
@@ -41,8 +36,7 @@ chest-loot:
     - {material: GOLD_INGOT, amount: 1-4, weight: 4}
     - {material: DIAMOND, amount: 1-2, weight: 1}
 
-# Phases unlock at "start" blocks broken. blocks = weighted table. Optional: mobs (entity types), mob-chance,
-# chest-chance (0.0 - 1.0 per regeneration), chest-loot.
+
 phases:
   - name: "<green>Plains"
     start: 0
