@@ -830,12 +830,26 @@ final class BedWarsGame extends GameInstance {
         }
     }
 
+    /** Entries ending/starting with "_" match as suffix (e.g. "_STAINED_GLASS"); others match the exact material name. */
+    private static boolean isBlastProof(Material m, List<String> rules) {
+        String n = m.name();
+        for (String r : rules) {
+            String rule = r.toUpperCase(Locale.ROOT);
+            if (rule.startsWith("_") ? n.endsWith(rule) : n.equals(rule)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void onExplode(EntityExplodeEvent e) {
         if (state != GameState.IN_GAME || !isNear(e.getLocation())) {
             return;
         }
-        e.blockList().removeIf(b -> !blocks.isPlaced(b) || luckyBlocks.contains(LocationUtil.pack(b)));
+        List<String> blastProof = cfg.getStringList("blast-proof");
+        e.blockList().removeIf(b -> !blocks.isPlaced(b) || luckyBlocks.contains(LocationUtil.pack(b))
+                || isBlastProof(b.getType(), blastProof));
         for (Block b : e.blockList()) {
             blocks.unmarkPlaced(b);
         }

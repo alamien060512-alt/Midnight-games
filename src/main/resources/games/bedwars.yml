@@ -9,6 +9,8 @@ base-radius: 20             # iron/gold generators within this distance of a tea
 no-build-radius: 2          # cannot place blocks this close to team spawns and generators (0 = off)
 tnt-fuse-ticks: 40          # TNT is primed instantly when placed
 fireball-yield: 2.0
+# Materials that TNT and fireballs cannot destroy. "_X" matches any material ending in X, otherwise exact name.
+blast-proof: [GLASS, _STAINED_GLASS, END_STONE]
 armor-tiers: [LEATHER, CHAINMAIL, IRON, DIAMOND]   # leggings + boots upgrade through these tiers
 
 # Items every player receives on spawn / respawn. {color} = team dye colour (for coloured items).
