@@ -1,9 +1,3 @@
-# ======================================================================================
-#  MidnightMinigames - messages.yml
-#  MiniMessage (<red>, <bold>, <gradient:...>) and legacy &-codes are supported.
-#  {placeholders} are filled in by the plugin; {prefix} inserts the prefix below.
-#  Lists are sent as multiple lines. Missing keys fall back to the bundled defaults.
-# ======================================================================================
 prefix: "<gradient:#7b2ff7:#f107a3><bold>Midnight</bold></gradient> <dark_gray>» <gray>"
 
 state:
