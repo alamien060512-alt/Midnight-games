@@ -61,6 +61,10 @@ scoreboard:
   status-dead: "<red>✘"
   you: " <gray>YOU"
 
+# Build limits: set the arena's "bounds" region (/minigame arena setregion bedwars <arena> bounds) and players can only place
+# blocks inside it. build-max-y adds a height limit (0 = none).
+build-max-y: 0
+
 shop-look-at-player: true   # shop villagers turn to face the nearest player
 shop-look-range: 10         # blocks
 

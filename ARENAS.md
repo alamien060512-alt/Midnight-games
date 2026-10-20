@@ -61,7 +61,9 @@ Modes: `solo`, `doubles`, `3v3`, `4v4`, `4v4v4v4`, `lucky`. One arena has one mo
 /minigame arena validate bedwars speedway
 /minigame arena enable bedwars speedway
 ```
-Needs at least 2 team spawns, a bed for each team, at least one generator, an item shop, an upgrade shop and a spectator spot. Remove generators or shops with `cleargens` and `clearshops`. Every team with a spawn gets a base, so make one spawn and bed per team (4v4v4v4 means 4 teams).
+Needs at least 2 team spawns, a bed for each team, at least one generator, an item shop, an upgrade shop and a spectator spot. Remove generators or shops with `cleargens` and `clearshops`.
+
+**Build limit:** select the whole map with `/minigame pos1` and `pos2`, then `/minigame arena setregion bedwars speedway bounds`. Players (and bridge eggs, towers and buckets) can then only build inside it. Add a height limit with `build-max-y` in `games/bedwars.yml`. Every team with a spawn gets a base, so make one spawn and bed per team (4v4v4v4 means 4 teams).
 
 ## 2. SkyWars
 

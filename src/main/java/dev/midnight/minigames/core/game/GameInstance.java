@@ -175,9 +175,46 @@ public abstract class GameInstance implements PlayerContext {
         return false;
     }
 
+    /**
+     * Whether blocks may be placed at a location: inside the optional "bounds" region of the arena and not above the
+     * optional {@code build-max-y} of the game's file (0 = no limit).
+     */
+    public boolean isBuildAllowedAt(Location l) {
+        dev.midnight.minigames.util.Cuboid bounds = arena.getRegion("bounds");
+        if (bounds != null && !bounds.contains(l)) {
+            return false;
+        }
+        int maxY = plugin.getConfigurationManager().game(minigame.getId()).getInt("build-max-y", 0);
+        return maxY <= 0 || l.getBlockY() <= maxY;
+    }
+
+    /**
+     * Waiting lobby safety net: a player who falls into the void while waiting is sent back to the lobby.
+     * The limit is {@code defaults.lobby-void-depth} blocks (default 15) below the lobby spawn.
+     * Returns true if the player was moved.
+     */
+    public boolean rescueFromVoid(Player player, Location to) {
+        if (!state.isJoinable() || !players.contains(player.getUniqueId()) || to.getWorld() == null) {
+            return false;
+        }
+        Location lobby = arena.getLobby();
+        if (lobby == null) {
+            return false;
+        }
+        int depth = plugin.getConfigurationManager().config().getInt("defaults.lobby-void-depth", 15);
+        double limit = to.getWorld() == lobby.getWorld() ? lobby.getY() - depth : to.getWorld().getMinHeight();
+        if (to.getY() >= limit) {
+            return false;
+        }
+        player.setFallDistance(0f);
+        player.setVelocity(new org.bukkit.util.Vector());
+        player.teleport(lobby);
+        return true;
+    }
+
     /** Places a block programmatically (bridge egg, towers, cages): only into air, tracked so the arena resets. */
     protected boolean placeTracked(org.bukkit.block.Block b, org.bukkit.Material m) {
-        if (!b.getType().isAir()) {
+        if (!b.getType().isAir() || !isBuildAllowedAt(b.getLocation())) {
             return false;
         }
         blocks.record(b);
@@ -948,6 +985,9 @@ public abstract class GameInstance implements PlayerContext {
         if (frozenOrLobby(player)) {
             e.setCancelled(true);
             explainBlocked(player);
+        } else if (!isBuildAllowedAt(e.getBlock().getLocation())) {
+            e.setCancelled(true);
+            plugin.getMessages().actionBar(player, "game.build-outside");
         }
     }
 

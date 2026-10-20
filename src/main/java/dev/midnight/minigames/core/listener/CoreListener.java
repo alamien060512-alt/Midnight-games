@@ -345,8 +345,20 @@ public final class CoreListener implements Listener {
             return;
         }
         PlayerContext c = ctx(e.getPlayer());
+        if (c instanceof GameInstance gi && to.getY() < from.getY() && gi.rescueFromVoid(e.getPlayer(), to)) {
+            return;
+        }
         if (c != null && c.wantsMoveEvents()) {
             c.onMove(e.getPlayer(), e);
+        }
+    }
+
+    /** No lava/water outside the buildable area (placed blocks are covered by the block place hook). */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBucketBuild(org.bukkit.event.player.PlayerBucketEmptyEvent e) {
+        if (ctx(e.getPlayer()) instanceof GameInstance gi && !gi.isBuildAllowedAt(e.getBlock().getLocation())) {
+            e.setCancelled(true);
+            plugin.getMessages().actionBar(e.getPlayer(), "game.build-outside");
         }
     }
 

@@ -50,6 +50,7 @@ defaults:
   full-countdown: 10     # Delay when the match is full
   game-time: 1800        # max game time in seconds, 0 is unlimited
   end-delay: 8           # seconds between the winner announcement and the arena reset
+  lobby-void-depth: 15   # a waiting player who falls this many blocks below the lobby spawn is teleported back
 
 party:
   max-size: 4

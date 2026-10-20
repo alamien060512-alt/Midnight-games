@@ -48,6 +48,7 @@ game:
   now-spectating: "{prefix}<gray>You are now spectating <white>{arena}<gray>. Use <white>/leave<gray> to go back."
   time-up: "{prefix}<red>Time is up!"
   draw: "{prefix}<yellow>The game ended in a draw."
+  build-outside: "<red>You can't build outside the map."
   build-blocked-not-started: "<red>You cannot build now (game state: {state})."
   build-blocked-spectator: "<red>Spectators cannot build."
   aborted: "{prefix}<red>The game was stopped by an administrator."
