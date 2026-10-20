@@ -61,6 +61,9 @@ scoreboard:
   status-dead: "<red>✘"
   you: " <gray>YOU"
 
+shop-look-at-player: true   # shop villagers turn to face the nearest player
+shop-look-range: 10         # blocks
+
 shop:
   title: "<dark_gray>Item Shop"
   quick-buy:             

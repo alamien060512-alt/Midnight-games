@@ -83,6 +83,7 @@ final class BedWarsGame extends GameInstance {
     private final List<Generator> generators = new ArrayList<>();
     private final Map<Long, GameTeam> bedBlocks = new HashMap<>();
     private final Map<UUID, String> shopEntities = new HashMap<>();
+    private org.bukkit.scheduler.BukkitTask shopLookTask;
     private final Map<UUID, Integer> respawning = new HashMap<>();
     private final Map<UUID, Integer> invulnerableUntil = new HashMap<>();
     private final Map<UUID, Integer> armorTier = new HashMap<>();
@@ -273,6 +274,49 @@ final class BedWarsGame extends GameInstance {
                 vil.setCustomNameVisible(true);
             });
             shopEntities.put(v.getUniqueId(), type);
+        }
+        startShopLook();
+    }
+
+    /** Shop villagers turn to face the nearest player (every 5 ticks, only while the game has shops). */
+    private void startShopLook() {
+        if (shopLookTask != null || shopEntities.isEmpty() || !cfg.getBoolean("shop-look-at-player", true)) {
+            return;
+        }
+        double range = Math.max(1.0, cfg.getDouble("shop-look-range", 10.0));
+        shopLookTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> faceShops(range * range), 5L, 5L);
+    }
+
+    private void faceShops(double rangeSq) {
+        List<Player> alive = new ArrayList<>();
+        for (Player p : getOnlinePlayers()) {
+            if (players.contains(p.getUniqueId())) {
+                alive.add(p);
+            }
+        }
+        if (alive.isEmpty()) {
+            return;
+        }
+        for (UUID id : shopEntities.keySet()) {
+            if (!(Bukkit.getEntity(id) instanceof Villager v) || !v.isValid()) {
+                continue;
+            }
+            Player nearest = null;
+            double best = rangeSq;
+            for (Player p : alive) {
+                if (p.getWorld() != v.getWorld()) {
+                    continue;
+                }
+                double d = p.getLocation().distanceSquared(v.getLocation());
+                if (d < best) {
+                    best = d;
+                    nearest = p;
+                }
+            }
+            if (nearest != null) {
+                Location eye = nearest.getEyeLocation();
+                v.lookAt(eye.getX(), eye.getY(), eye.getZ(), io.papermc.paper.entity.LookAnchor.EYES);
+            }
         }
     }
 
@@ -1000,6 +1044,10 @@ final class BedWarsGame extends GameInstance {
 
     @Override
     protected void onCleanup() {
+        if (shopLookTask != null) {
+            shopLookTask.cancel();
+            shopLookTask = null;
+        }
         for (UUID id : shopEntities.keySet()) {
             Entity en = Bukkit.getEntity(id);
             if (en != null) {

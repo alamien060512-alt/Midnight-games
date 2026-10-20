@@ -66,6 +66,9 @@ public final class SkyWarsMinigame extends AbstractArenaMinigame {
                 }
                 Block target = p.getTargetBlockExact(6);
                 if (target == null || !(target.getState() instanceof Container)) {
+                    target = nearestContainer(p, 4); // not looking exactly at it: take the closest one around you
+                }
+                if (target == null) {
                     m.send(sender, "skywars.look-at-chest");
                     return true;
                 }
@@ -113,6 +116,28 @@ public final class SkyWarsMinigame extends AbstractArenaMinigame {
                 return false;
             }
         }
+    }
+
+    /** Closest chest/barrel within {@code radius} blocks of the player, or null. */
+    private static Block nearestContainer(Player p, int radius) {
+        Block best = null;
+        double bestDist = Double.MAX_VALUE;
+        Block origin = p.getLocation().getBlock();
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dy = -radius; dy <= radius; dy++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    Block b = origin.getRelative(dx, dy, dz);
+                    if (b.getState() instanceof Container) {
+                        double d = b.getLocation().add(0.5, 0.5, 0.5).distanceSquared(p.getEyeLocation());
+                        if (d < bestDist) {
+                            bestDist = d;
+                            best = b;
+                        }
+                    }
+                }
+            }
+        }
+        return best;
     }
 
     private void addChest(Arena arena, String tier, Block b) {

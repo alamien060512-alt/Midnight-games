@@ -253,7 +253,7 @@ bedwars:
   lucky-block-name: "<yellow><bold>Lucky Block"
 
 skywars:
-  look-at-chest: "{prefix}<red>Look at a chest or barrel (within 6 blocks) first."
+  look-at-chest: "{prefix}<red>No chest or barrel found. Stand next to it or look at it (within 6 blocks)."
   chest-added: "{prefix}<green>Registered a <white>{tier}<green> chest (<white>{count}<green> total)."
   chests-scanned: "{prefix}<green>Found <white>{found}<green> container(s) in your selection (<white>{count}<green> registered)."
   chests-cleared: "{prefix}<green>All chests unregistered."
