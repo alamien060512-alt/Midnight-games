@@ -97,7 +97,95 @@ Modes: `classic`, `snowball`, `marathon`.
 ```
 The `floor` region is rebuilt after each round. Players who fall below it are out.
 
-## 4. Duels (kits)
+## 4. TNT Run
+
+Mode: `classic`. The floor disappears under the players' feet; last one standing wins.
+
+```
+/minigame arena create tntrun runway
+/minigame arena setplayers tntrun runway 2 16
+/minigame arena setlobby tntrun runway
+/minigame pos1   /minigame pos2                     (select EVERY floor layer, top to bottom)
+/minigame arena setregion tntrun runway floor
+/minigame arena addspawn tntrun runway              (optional; without spawns players start at random spots on the top layer)
+/minigame arena setspectator tntrun runway          (optional)
+/minigame arena enable tntrun runway
+```
+- Build the floor yourself. The classic look is a layer of sand on top of a layer of TNT, repeated a few times, with a gap
+  between the layers so players fall onto the next one.
+- A block vanishes about half a second after a player steps on it, together with the block below it. Everything is restored
+  after the game, so you never rebuild the map.
+- Players are out when they fall below the lowest layer. Players get 3 double jumps (press space twice).
+- Delay, grace period and jumps: `games/tntrun.yml`.
+
+## 5. The Bridge (solo, duo)
+
+Modes: `solo` (1v1) and `duo` (2v2). Two teams, **red** and **blue**. Jump into the enemy goal to score, first to 5 wins.
+
+```
+/minigame arena create bridge classic
+/minigame arena setmode bridge classic solo          (or duo)
+/minigame arena setplayers bridge classic 2 2        (duo: 4 4)
+/minigame arena setlobby bridge classic
+/minigame arena setspectator bridge classic          (optional)
+/minigame arena setspawn bridge classic red          (stand on the red spawn cage)
+/minigame arena setspawn bridge classic blue
+/minigame pos1   /minigame pos2                      (select the RED goal hole)
+/minigame arena setregion bridge classic goal_red    (the goal that RED defends)
+/minigame pos1   /minigame pos2                      (select the BLUE goal hole)
+/minigame arena setregion bridge classic goal_blue
+/minigame arena enable bridge classic
+```
+- A team scores by entering the **other** team's goal region. Make each region a few blocks deep so players cannot miss it.
+- Optional `bounds` region (`setregion bridge classic bounds`) limits where players can build.
+- After a goal everyone goes back to their spawn with a fresh kit and a 5 second countdown. Placed blocks stay, so the
+  bridge keeps growing. Players can only break blocks that players placed.
+- Kit, goals needed, countdown and respawn time: `games/bridge.yml`.
+
+## 6. Capture the Flag (solo, duo)
+
+Modes: `solo` (1v1) and `duo` (2v2). Two teams, **red** and **blue**. Capture the enemy flag 3 times to win.
+
+```
+/minigame arena create ctf castle
+/minigame arena setmode ctf castle solo              (or duo)
+/minigame arena setplayers ctf castle 2 2            (duo: 4 4)
+/minigame arena setlobby ctf castle
+/minigame arena setspectator ctf castle              (optional)
+/minigame arena setspawn ctf castle red
+/minigame arena setspawn ctf castle blue
+/minigame arena setflag ctf castle red               (stand ON the spot where the red flag should be)
+/minigame arena setflag ctf castle blue
+/minigame arena enable ctf castle
+```
+- Flags are banner blocks placed at the flag spots when the game starts (the spot must be free air with solid ground below).
+- Walk up to the enemy flag to pick it up (you glow and wear the banner). Bring it to your own flag to score, as long as your
+  own flag is at home.
+- A killed carrier drops the flag. Teammates return it by touching it, otherwise it returns by itself after 20 seconds.
+- Building is off by default. Kit, captures needed, respawn time and flag rules: `games/ctf.yml`.
+
+## 7. Dropper
+
+Mode: `race`. Fall through each level without touching anything and land in the finish zone. First to finish all levels wins.
+
+```
+/minigame arena create dropper maps
+/minigame arena setplayers dropper maps 1 8
+/minigame arena setlobby dropper maps
+```
+Then for **each level, in order**:
+```
+(stand at the top of the level, where players should start)
+/minigame pos1   /minigame pos2                      (select the landing zone at the bottom, usually the water pool)
+/minigame arena addlevel dropper maps
+```
+and finally `/minigame arena enable dropper maps`.
+- Touching any block while falling sends the player back to the start of the level.
+- Collisions only count after the player has dropped about 1.5 blocks, so the start platform is safe.
+- The landing zone must contain the place where players end up (the water), so the finish is detected before they hit the floor.
+- Other commands: `dellevel <n>`, `clearlevels`, `listlevels`. Tuning: `games/dropper.yml`.
+
+## 8. Duels (kits)
 
 Every kit in `games/duels.yml` is a mode. The arena mode `any` (default) hosts every kit.
 
@@ -112,7 +200,7 @@ Every kit in `games/duels.yml` is a mode. The arena mode `any` (default) hosts e
 ```
 Lock one arena to one kit: `/minigame arena setmode duels box sumo`.
 
-## 5. 1v1
+## 9. 1v1
 
 Same as Duels with game id `1v1`. Modes: `quick`, `classic`.
 
@@ -126,7 +214,7 @@ Same as Duels with game id `1v1`. Modes: `quick`, `classic`.
 /minigame arena enable 1v1 small
 ```
 
-## 6. Parkour
+## 10. Parkour
 
 One arena is one course.
 
@@ -141,91 +229,6 @@ One arena is one course.
 /minigame arena enable parkour easy1
 ```
 `clearcheckpoints` starts the checkpoint list over.
-
-## 7. Prison
-
-One arena named `main`, plus any number of mines.
-
-```
-/minigame arena create prison main
-/minigame arena setlobby prison main                (prison spawn)
-/minigame pos1   /minigame pos2                     (select the mine area)
-/minigame arena addmine prison main a               (mine "a", needs rank A)
-/minigame arena addmine prison main b B             (mine "b", needs rank B)
-/minigame arena enable prison main
-```
-Other commands: `delmine`, `setminespawn <mine>` (stand there), `resetmine <mine>`, `listmines`. Block tables, ranks and sell prices are in `games/prison.yml`. Players run `/prison sell`.
-
-## 8. Skyblock
-
-```
-/minigame world create skyblock_world               (void world; or use your main world)
-/minigame arena create skyblock main
-/minigame arena setworld skyblock main skyblock_world
-/minigame arena setlobby skyblock main              (hub spawn)
-/minigame arena enable skyblock main
-```
-Islands are created per player with `/skyblock create`, spaced by `island.spacing` in `games/skyblock.yml`.
-
-## 9. OneBlock
-
-Identical to Skyblock with game id `oneblock`:
-
-```
-/minigame arena create oneblock main
-/minigame arena setworld oneblock main <world>
-/minigame arena setlobby oneblock main
-/minigame arena enable oneblock main
-```
-Players run `/oneblock create`.
-
-## 10. SkyGen (shared)
-
-SkyGen now defaults to **shared mode** (`mode: shared` in `games/skygen.yml`):
-
-- Everyone plays in **one shared generator area** that an admin builds.
-- **Players cannot place blocks** (admins with `midnight.admin.build` can).
-- Players **mine** the ore blocks the generators produce. They can mine nothing else.
-- Players **sell** items with `/skygen sell` (or the button in the shop). They **buy** items with `/skygen buy`.
-
-### Build the area
-1. Build your platform. For each generator, place a normal block where the generator should be and leave the **block above it empty**. The ore appears there.
-2. Create and configure the arena:
-```
-/minigame arena create skygen main
-/minigame arena setworld skygen main <world>
-/minigame arena setlobby skygen main                (stand at the spawn)
-```
-3. For every generator, **look at its block** (within 8 blocks) and run:
-```
-/minigame arena addgen skygen main <tier>           (tier 1 to 5, see games/skygen.yml -> tiers)
-```
-The block turns into that tier's generator block (cobble, iron, gold, diamond, emerald) and ore spawns above it every few seconds.
-4. Enable it: `/minigame arena enable skygen main`
-
-Other commands: `delgen` (look at a generator), `listgens`, `cleargens`.
-
-### Player commands
-| Command | What it does |
-|---|---|
-| `/skygen` | Enter SkyGen |
-| `/skygen sell` | Sell everything sellable in your inventory |
-| `/skygen buy` | Open the item shop (pickaxes, food, ...) with a sell button |
-| `/skygen stats` | Balance, blocks mined, sell multiplier |
-| `/skygen spawn` | Teleport back to spawn |
-| `/skygen leave` | Leave the game |
-
-### Configure it (`games/skygen.yml` -> `shared`)
-- `shared.sell.values`: coins per dropped item (`COAL`, `RAW_IRON`, `DIAMOND`, ...).
-- `shared.sell.autosell: true`: blocks pay instantly instead of dropping items.
-- `shared.sell.multiplier` and `permission-multipliers`: for example `midnight.skygen.vip` earns x1.5.
-- `shared.buy.items`: shop entries (`slot`, `material`, `name`, `price`, `amount`, `enchants`...).
-- `shared.starter-items`: given once to a new player (a pickaxe by default).
-- Generator tiers (`tiers:`) set which ore each generator makes and how fast.
-
-To go back to the per-player island version, set `mode: island`.
-
----
 
 ## Troubleshooting
 

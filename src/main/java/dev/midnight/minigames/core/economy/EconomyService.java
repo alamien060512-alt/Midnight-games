@@ -8,7 +8,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import java.lang.reflect.Method;
 
 /**
- * Economy hook used by Prison, Skyblock upgrades and SkyGen. Provider is chosen in config.yml
+ * Economy hook for coins. Provider is chosen in config.yml
  * ({@code economy.provider}): "internal" uses the plugin's own coins, "vault" uses any Vault economy.
  * Vault is accessed reflectively, so it is neither a compile-time nor a hard runtime dependency.
  */

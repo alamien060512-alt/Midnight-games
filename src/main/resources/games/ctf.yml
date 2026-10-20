@@ -1,0 +1,30 @@
+# ======================================================================================
+#  Capture the Flag - games/ctf.yml
+#  Two teams (red, blue). Steal the enemy flag and bring it to your own base. Setup (see ARENAS.md):
+#    /minigame arena setspawn ctf <arena> red|blue
+#    stand on each flag spot: /minigame arena setflag ctf <arena> red|blue
+#    optional: setregion ... bounds, setspectator, setvoid
+# ======================================================================================
+score-to-win: 3             # captures needed (modes may override with their own score-to-win)
+respawn-delay: 3            # seconds in spectator after dying (0 = instant)
+invulnerable-seconds: 3
+
+flag:
+  touch-radius: 1.5         # how close you must get to pick up / return a flag
+  return-seconds: 20        # a dropped flag returns on its own after this long
+  require-own-flag-home: true   # you can only capture while your own flag is at your base
+  carrier-slowness: 0       # slowness level for the carrier (0 = none, 1 = Slowness I)
+
+building:
+  enabled: false            # nobody builds in CTF by default
+  spawn-protection-radius: 3
+  max-y: 0
+
+kit:
+  leather-armor: true
+  items:
+    - {material: IRON_SWORD, name: "<white>Sword", unbreakable: true, slot: 0}
+    - {material: BOW, name: "<white>Bow", unbreakable: true, slot: 1}
+    - {material: COOKED_BEEF, amount: 16, slot: 2}
+    - {material: GOLDEN_APPLE, amount: 3, slot: 3}
+    - {material: ARROW, amount: 24, slot: 8}

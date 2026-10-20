@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Base class for progression games without rounds (Prison, Skyblock, OneBlock, SkyGen, Parkour).
+ * Base class for progression games without rounds (Parkour).
  * Players "enter" the game world, keep their inventory, and stay until they leave. The minigame itself is the
  * {@link PlayerContext} of everyone inside.
  */

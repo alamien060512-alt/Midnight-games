@@ -1,0 +1,28 @@
+# ======================================================================================
+#  The Bridge - games/bridge.yml
+#  Two teams (red, blue). Jump into the enemy goal to score. Setup (see ARENAS.md):
+#    /minigame arena setspawn bridge <arena> red|blue
+#    select each goal, then /minigame arena setregion bridge <arena> goal_red   (the goal RED defends)
+#                          and /minigame arena setregion bridge <arena> goal_blue
+#    optional: setregion ... bounds (build limit), setspectator, setvoid
+# ======================================================================================
+score-to-win: 5             # goals needed (modes may override with their own score-to-win)
+round-countdown: 5          # seconds players are frozen at their spawn after every goal
+respawn-delay: 0            # seconds in spectator after dying (0 = instant)
+invulnerable-seconds: 3     # protection after respawning
+
+building:
+  enabled: true             # players can place blocks (and break only blocks placed by players)
+  spawn-protection-radius: 3
+  max-y: 0                  # highest block players may place (0 = no limit)
+
+kit:
+  leather-armor: true       # armour in the team colour
+  items:
+    - {material: IRON_SWORD, name: "<white>Sword", unbreakable: true, slot: 0}
+    - {material: BOW, name: "<white>Bow", unbreakable: true, slot: 1}
+    - {material: IRON_PICKAXE, name: "<white>Pickaxe", unbreakable: true, enchants: {efficiency: 2}, slot: 2}
+    - {material: TERRACOTTA, team-material: TERRACOTTA, amount: 64, slot: 3}
+    - {material: TERRACOTTA, team-material: TERRACOTTA, amount: 64, slot: 4}
+    - {material: GOLDEN_APPLE, amount: 8, slot: 5}
+    - {material: ARROW, amount: 1, slot: 8}

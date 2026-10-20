@@ -183,6 +183,52 @@ scoreboard:
           - "<white>Your wins: <gold>{score}"
           - ""
           - "<yellow>play.yourserver.net"
+    tntrun:
+      ingame:
+        lines:
+          - "<gray>{date} <dark_gray>{arena}"
+          - ""
+          - "<white>Alive: <green>{alive}"
+          - "<white>Double jumps: <aqua>{jumps}"
+          - "<white>Time: <yellow>{time}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    bridge:
+      ingame:
+        lines:
+          - "<gray>{date} <dark_gray>{arena}"
+          - ""
+          - "<white>Team: {team_colored}"
+          - "<white>Score: {scores}"
+          - "<white>First to: <yellow>{to_win}"
+          - "<white>Kills: <green>{kills}"
+          - "<white>Time left: <yellow>{timeleft}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    ctf:
+      ingame:
+        lines:
+          - "<gray>{date} <dark_gray>{arena}"
+          - ""
+          - "<white>Team: {team_colored}"
+          - "<white>Captures: {scores} <gray>(to {to_win})"
+          - "<red>Red flag: {flag_red}"
+          - "<blue>Blue flag: {flag_blue}"
+          - "{carrying}"
+          - "<white>Time left: <yellow>{timeleft}"
+          - ""
+          - "<yellow>play.yourserver.net"
+    dropper:
+      ingame:
+        lines:
+          - "<gray>{date} <dark_gray>{arena}"
+          - ""
+          - "<white>Level: <aqua>{level}<gray>/<aqua>{levels}"
+          - "<white>Fails: <red>{fails}"
+          - "<white>Leader: <green>level {leader_level}"
+          - "<white>Time: <yellow>{time}"
+          - ""
+          - "<yellow>play.yourserver.net"
     duels:
       ingame:
         lines:
@@ -213,57 +259,12 @@ scoreboard:
           - "<white>Best: <gold>{best}"
           - ""
           - "<yellow>play.yourserver.net"
-    prison:
-      ingame:
-        lines:
-          - "<gray>{date}"
-          - ""
-          - "<white>Rank: <aqua>{rank}"
-          - "<white>Next: <gray>{next_rank} <gold>${next_cost}"
-          - "<white>Mined: <green>{mined}"
-          - "<white>Balance: <gold>${balance}"
-          - ""
-          - "<yellow>play.yourserver.net"
-    skyblock:
-      ingame:
-        lines:
-          - "<gray>{date}"
-          - ""
-          - "<white>Island owner: <aqua>{island_owner}"
-          - "<white>Members: <green>{island_members}"
-          - "<white>Radius: <yellow>{island_radius}"
-          - "<white>Balance: <gold>${balance}"
-          - ""
-          - "<yellow>play.yourserver.net"
-    oneblock:
-      ingame:
-        lines:
-          - "<gray>{date}"
-          - ""
-          - "<white>Phase: <aqua>{phase}"
-          - "<white>Blocks: <green>{blocks}"
-          - "<white>Next phase in: <yellow>{next_phase_in}"
-          - ""
-          - "<yellow>play.yourserver.net"
-    skygen:
-      ingame:
-        lines:
-          - "<gray>{date}"
-          - ""
-          - "<white>Rank: <light_purple>{rank}"
-          - "<white>Balance: <gold>${balance}"
-          - "<white>Multiplier: <green>x{multiplier}"
-          - "<white>Generators: <aqua>{generators}"
-          - ""
-          - "<yellow>play.yourserver.net"
-
 #  Tab list - optional
 tab:
   enabled: false
   format: "{prefix}{player}{suffix}"
   prefixes:
     lobby: ""
-    prison: ""     
   header:
     - ""
     - "<gradient:#7b2ff7:#f107a3><bold>Midnight Network"
@@ -446,6 +447,119 @@ games:
           - ""
           - "<white>Playing: <green>{players}"
           - "<yellow>Click to play!"
+  tntrun:
+    enabled: true
+    display-name: "<red>TNT Run"
+    spectators: true
+    rewards: {win: 25, loss: 3, kill: 0}
+    modes:
+      classic:
+        name: "<red><bold>Classic"
+        material: TNT
+        slot: 13
+        double-jumps: 3
+        min-players: 2
+        max-players: 16
+        lore:
+          - "<gray>The floor vanishes under your feet."
+          - "<gray>Keep running. Last one standing wins."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to play!"
+  bridge:
+    enabled: true
+    display-name: "<gold>The Bridge"
+    spectators: true
+    rewards: {win: 40, loss: 4, kill: 1}
+    modes:
+      solo:
+        name: "<gold><bold>Solo"
+        material: TERRACOTTA
+        slot: 11
+        team-size: 1
+        score-to-win: 5
+        min-players: 2
+        max-players: 2
+        lore:
+          - "<gray>1 vs 1. First to 5 goals wins."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to play!"
+      duo:
+        name: "<gold><bold>Duo"
+        material: ORANGE_TERRACOTTA
+        slot: 15
+        team-size: 2
+        score-to-win: 5
+        min-players: 4
+        max-players: 4
+        lore:
+          - "<gray>2 vs 2. First to 5 goals wins."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to play!"
+  ctf:
+    enabled: true
+    display-name: "<red>Capture the Flag"
+    spectators: true
+    rewards: {win: 40, loss: 4, kill: 1}
+    modes:
+      solo:
+        name: "<red><bold>Solo"
+        material: RED_BANNER
+        slot: 11
+        team-size: 1
+        score-to-win: 3
+        min-players: 2
+        max-players: 2
+        lore:
+          - "<gray>1 vs 1. Capture the flag 3 times."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to play!"
+      duo:
+        name: "<red><bold>Duo"
+        material: BLUE_BANNER
+        slot: 15
+        team-size: 2
+        score-to-win: 3
+        min-players: 4
+        max-players: 4
+        lore:
+          - "<gray>2 vs 2. Capture the flag 3 times."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to play!"
+  dropper:
+    enabled: true
+    display-name: "<aqua>Dropper"
+    spectators: true
+    rewards: {win: 30, loss: 3, kill: 0}
+    modes:
+      race:
+        name: "<aqua><bold>Race"
+        material: WATER_BUCKET
+        slot: 13
+        min-players: 1
+        max-players: 8
+        lore:
+          - "<gray>Fall through every level without"
+          - "<gray>touching a block. First to finish wins."
+          - ""
+          - "<white>Playing: <green>{players}"
+          - "<white>Queued: <yellow>{queued}"
+          - ""
+          - "<yellow>Click to play!"
   duels:
     enabled: true
     display-name: "<gold>Duels"
@@ -484,64 +598,8 @@ games:
           - "<white>Queued: <yellow>{queued}"
           - ""
           - "<yellow>Click to queue!"
-  prison:
-    enabled: true
-    display-name: "<gold>Prison"
-    pvp: false
-    modes:
-      play:
-        name: "<gold><bold>Enter Prison"
-        material: IRON_BARS
-        slot: 13
-        lore:
-          - "<gray>Mine, sell and rank up."
-          - ""
-          - "<white>Players: <green>{players}"
-          - "<yellow>Click to enter!"
-  skyblock:
-    enabled: true
-    display-name: "<green>Skyblock"
-    pvp: false
-    modes:
-      play:
-        name: "<green><bold>Your Island"
-        material: GRASS_BLOCK
-        slot: 13
-        lore:
-          - "<gray>Build your island in the sky."
-          - ""
-          - "<white>Players: <green>{players}"
-          - "<yellow>Click to enter!"
   parkour:
     enabled: true
     display-name: "<green>Parkour"
     rewards: {finish: 10}
     # modes are generated from the enabled parkour arenas (courses)
-  oneblock:
-    enabled: true
-    display-name: "<yellow>OneBlock"
-    pvp: false
-    modes:
-      play:
-        name: "<yellow><bold>Your OneBlock"
-        material: GRASS_BLOCK
-        slot: 13
-        lore:
-          - "<gray>One block. Endless possibilities."
-          - ""
-          - "<white>Players: <green>{players}"
-          - "<yellow>Click to enter!"
-  skygen:
-    enabled: true
-    display-name: "<light_purple>SkyGen"
-    pvp: false
-    modes:
-      play:
-        name: "<light_purple><bold>SkyGen"
-        material: BEACON
-        slot: 13
-        lore:
-          - "<gray>Mine generator blocks, sell and upgrade."
-          - ""
-          - "<white>Players: <green>{players}"
-          - "<yellow>Click to enter!"

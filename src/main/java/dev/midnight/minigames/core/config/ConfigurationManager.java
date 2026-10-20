@@ -13,8 +13,8 @@ import java.util.Map;
 /** Owns config.yml, messages.yml, menus.yml, permissions.yml and the per-game files in games/. */
 public final class ConfigurationManager {
 
-    public static final List<String> GAME_FILES = List.of("bedwars", "skywars", "spleef", "prison", "skyblock",
-            "duels", "parkour", "oneblock", "skygen");
+    public static final List<String> GAME_FILES = List.of("bedwars", "skywars", "spleef", "tntrun", "bridge", "ctf", "dropper",
+            "duels", "parkour");
 
     private final MidnightMinigames plugin;
     private ConfigFile config;

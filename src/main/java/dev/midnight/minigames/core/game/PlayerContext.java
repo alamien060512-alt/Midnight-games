@@ -131,4 +131,7 @@ public interface PlayerContext {
 
     default void onExplode(EntityExplodeEvent e) {
     }
+
+    default void onToggleFlight(Player player, org.bukkit.event.player.PlayerToggleFlightEvent e) {
+    }
 }

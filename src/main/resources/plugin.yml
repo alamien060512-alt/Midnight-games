@@ -3,7 +3,7 @@ version: '${project.version}'
 main: dev.midnight.minigames.MidnightMinigames
 api-version: '26.3'
 authors: [Midnight]
-description: Modular all-in-one minigame framework (BedWars, SkyWars, Spleef, Prison, Skyblock, Duels, 1v1, Parkour, OneBlock, SkyGen)
+description: Modular all-in-one minigame framework (BedWars, SkyWars, Spleef, TNT Run, Bridge, Capture the Flag, Dropper, Duels, 1v1, Parkour)
 softdepend: [PlaceholderAPI, Vault]
 load: POSTWORLD
 
@@ -34,11 +34,6 @@ commands:
     aliases: [skywars]
   spleef:
     description: Open the Spleef menu
-  prison:
-    description: Prison menu and commands
-  skyblock:
-    description: Skyblock menu and island commands
-    aliases: [sb]
   duels:
     description: Open the Duels menu
   1v1:
@@ -47,12 +42,16 @@ commands:
   parkour:
     description: Parkour menu and commands
     aliases: [pk]
-  oneblock:
-    description: OneBlock menu and island commands
-    aliases: [ob]
-  skygen:
-    description: SkyGen menu and commands
-    aliases: [sg]
+  bridge:
+    description: Open the Bridge menu
+    aliases: [thebridge, tb]
+  ctf:
+    description: Open the Capture the Flag menu
+  dropper:
+    description: Open the Dropper menu
+  tntrun:
+    description: Open the TNT Run menu
+    aliases: [tr]
 
 permissions:
   midnight.play:
@@ -65,22 +64,18 @@ permissions:
       midnight.play.bedwars: true
       midnight.play.skywars: true
       midnight.play.spleef: true
-      midnight.play.prison: true
-      midnight.play.skyblock: true
       midnight.play.duels: true
       midnight.play.1v1: true
       midnight.play.parkour: true
-      midnight.play.oneblock: true
-      midnight.play.skygen: true
+      midnight.play.bridge: true
+      midnight.play.ctf: true
+      midnight.play.dropper: true
+      midnight.play.tntrun: true
   midnight.play.bedwars:
     default: true
   midnight.play.skywars:
     default: true
   midnight.play.spleef:
-    default: true
-  midnight.play.prison:
-    default: true
-  midnight.play.skyblock:
     default: true
   midnight.play.duels:
     default: true
@@ -88,9 +83,13 @@ permissions:
     default: true
   midnight.play.parkour:
     default: true
-  midnight.play.oneblock:
+  midnight.play.bridge:
     default: true
-  midnight.play.skygen:
+  midnight.play.ctf:
+    default: true
+  midnight.play.dropper:
+    default: true
+  midnight.play.tntrun:
     default: true
   midnight.menu:
     description: Use the compass menu and game commands
@@ -123,7 +122,7 @@ permissions:
   midnight.admin.world:
     default: op
   midnight.admin.build:
-    description: Build/break in lobby and protected island areas
+    description: Build/break in lobby and protected areas
     default: op
   midnight.admin.stats:
     default: op

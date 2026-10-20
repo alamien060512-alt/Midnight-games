@@ -7,7 +7,7 @@ One plugin, ten built-in minigames, and a small core you can extend with your ow
 
 | Round based (arenas, lobby → countdown → game → reset) | Persistent (enter a world, keep progressing) |
 |---|---|
-| BedWars, SkyWars, Spleef, Duels, 1v1 | Prison, Skyblock, OneBlock, SkyGen, Parkour |
+| BedWars, SkyWars, Spleef, TNT Run, The Bridge (solo/duo), Capture the Flag (solo/duo), Dropper, Duels, 1v1 | Parkour |
 
 ---------------------------------------------------------------------------------------------------
 
@@ -31,12 +31,15 @@ Paper's own source** (`PaperMC/Paper`, `mcVersion=26.3`, `apiVersion=26.3`) and 
 
 * The whole project compiles against that API with no warnings that matter, and `mvn package` produces the jar
   (verified with `-Djava.release=21` because only JDK 21 was available; the shipped `pom.xml` targets Java 25).
-* All 127 classes load and pass bytecode verification (`-Xverify:all`).
+* All 123 classes load and pass bytecode verification (`-Xverify:all`).
 * All bundled YAML files parse; every material / sound key in them exists in the 26.3 API; all 267 messages render;
   config validation reports no problems on the default files.
 * A simulated server (fake Bukkit objects + manual scheduler + a real SQLite file) drove the SkyWars lifecycle end to
   end: queue → join → countdown → start → elimination → win → stats/rewards → reset, plus parties, forced stop,
   late joiners being queued instead of joining a running game, and stats + leaderboard persisted in SQLite.
+* The same simulation (with a block-aware fake world) drove TNT Run (block removal, restore, elimination), The Bridge
+  (teams, freeze countdown, goals, respawns, win), Capture the Flag (pick up, capture, drop, return, timeout, win) and
+  Dropper (collision reset, level progression, win) end to end.
 * **Not** verified: running on a live Paper server (no server jar was obtainable), MySQL, Vault, PlaceholderAPI
   itself (a stub was used to compile), and anything that creates `ItemStack`s/inventories (shops, kits, loot, menus).
   Treat the first run on a test server as the real acceptance test and read the console on startup – every config
@@ -73,15 +76,15 @@ MidnightMinigames/
    │  │  ├─ display/    ScoreboardService, TabService, EffectService, LobbyService
    │  │  ├─ placeholder/ PlaceholderService, PlaceholderRegistry, PlaceholderHook, MidnightExpansion
    │  │  ├─ economy/    EconomyService (internal coins or Vault via reflection)
-   │  │  ├─ island/     Island framework shared by Skyblock / OneBlock / SkyGen
    │  │  └─ listener/   CoreListener  - the ONLY Bukkit listener in the plugin
    │  ├─ minigames/
-   │  │  ├─ bedwars/  skywars/  spleef/  duels/  onevone/        round based games
-   │  │  └─ prison/  skyblock/  oneblock/  skygen/  parkour/     persistent games
+   │  │  ├─ bedwars/  skywars/  spleef/  tntrun/  dropper/  duels/  onevone/   round based games
+   │  │  ├─ teamfight/  bridge/  ctf/      TeamFightGame base (red vs blue, kits, respawns) + The Bridge + Capture the Flag
+   │  │  └─ parkour/                         persistent game
    │  └─ util/        ItemFactory, LootTable, WeightedTable, RegionFiller, Cuboid, LocationUtil, TextUtil ...
    └─ resources
       ├─ plugin.yml  config.yml  messages.yml  menus.yml  permissions.yml
-      └─ games/  bedwars.yml skywars.yml spleef.yml duels.yml parkour.yml prison.yml skyblock.yml oneblock.yml skygen.yml
+      └─ games/  bedwars.yml skywars.yml spleef.yml tntrun.yml bridge.yml ctf.yml dropper.yml duels.yml parkour.yml
 ```
 
 ### Design in one paragraph
@@ -91,7 +94,7 @@ handlePlayerJoin/getState/getPlayers/getMaxPlayers`). Round based games extend `
 one `GameInstance` per active arena; the instance owns the state machine
 `WAITING → STARTING → IN_GAME → ENDING → RESETTING`, player snapshots/restore, spectators, teams, stats and rewards,
 and the game only implements the rules (`onGameStart`, `onTick`, `onPlayerDeath`, `checkWin`, `onResetWorld`...).
-Persistent games extend `AbstractPersistentMinigame` (or `AbstractIslandMinigame`). Everything a player can be
+Persistent games extend `AbstractPersistentMinigame`. Everything a player can be
 "inside" implements `PlayerContext`; `CoreListener` looks the context up with one `HashMap` read and forwards the event,
 so adding a game never adds a listener.
 
@@ -99,11 +102,11 @@ so adding a game never adds a listener.
 
 * One repeating task drives all games (`GameManager`, 1 Hz); generators, countdowns, respawns, refills and timeline
   events are all counters inside that tick. Scoreboards use one task that only touches players with a board and only
-  sends changed lines. Parkour's action-bar timer, Prison's mine-reset check and SkyGen's generator task exist only while
+  sends changed lines. Parkour's action-bar timer and TNT Run's block-removal task exist only while
   someone is playing them.
 * `PlayerMoveEvent` work happens only for block changes of players whose context asked for it.
 * All database access runs on a dedicated worker thread; profiles are loaded on join, saved on quit and every 5 minutes
-  (dirty profiles only). Arena and island files are written asynchronously.
+  (dirty profiles only). Arena files are written asynchronously.
 * Arena resets restore only the blocks that were changed (`BlockTracker`), 2000 blocks per tick by default.
   Worlds are never unloaded or deleted unless you explicitly enable world-copy resets (see below).
 
@@ -123,7 +126,7 @@ without spaces** (e.g. `bw_speedway` - Paper 26.x identifies worlds by `minecraf
 `/minigame world load bw_speedway`. Paper migrates a classic top-level folder into `<level>/dimensions/minecraft/`
 itself; a world already in that folder loads too. A failed load prints the exact reason in chat and console. Enabled
 arenas load their world automatically when needed (`worlds.auto-load: true`). `/minigame world create <name>` makes an
-empty void world (Skyblock-style games). Multiverse is not required, but any world it loaded is usable as well.
+empty void world. Multiverse is not required, but any world it loaded is usable as well.
 
 **Everything in one world.** You can build every arena in a single world (even the main world) and just create several
 arenas that point to it. Nothing is created automatically: arenas exist only when you create them with
@@ -148,7 +151,7 @@ that sit close together, also mark each arena's area so explosions and cleanup s
 | Command | Description |
 |---|---|
 | `/games` | open the main menu (same as the compass) |
-| `/bw` `/sw` `/spleef` `/prison` `/skyblock` `/duels` `/1v1` `/parkour` `/oneblock` `/skygen` | open that game's mode menu (NPC friendly) |
+| `/bw` `/sw` `/spleef` `/tntrun` `/bridge` `/ctf` `/dropper` `/duels` `/1v1` `/parkour` | open that game's mode menu (NPC friendly) |
 | `/<game> join <mode>` | queue directly, no GUI (`/bw join doubles`, `/parkour join course1`, `/duels join sumo`) |
 | `/<game> leave` , `/leave` (`/lobby`, `/hub`) | leave the game / queue / go to lobby |
 | `/party create`, `invite <player>`, `accept`, `leave`, `disband`, `kick <player>`, `list` | parties (only the leader queues, the party joins together and stays on one team when the team size allows) |
@@ -156,15 +159,12 @@ that sit close together, also mark each arena's area so explosions and cleanup s
 | `/duels challenge <player> [kit]`, `/duels accept` | direct duel on a free arena |
 | `/duels elo [kit]`, `/duels top [kit]` (also `/1v1`) | ranked rating and leaderboard |
 | `/parkour reset`, `checkpoint`, `top [course]`, `best [course]`, `list` | parkour helpers |
-| `/prison rankup [max]`, `sell`, `mines`, `rank`, `ranks` | prison |
-| `/skyblock` / `/oneblock` / `/skygen` `create`, `home`, `sethome`, `invite <p>`, `accept`, `kick <p>`, `leave`, `delete [confirm]`, `info` | islands |
-| `/skyblock upgrades`, `level`, `top` · `/oneblock phase`, `reset [confirm]` · `/skygen shop`, `upgrades`, `prestige [confirm]`, `stats` | game specific |
 
 ### Admin commands (`/minigame`, aliases `/mg`, `/minigames`, `/midnight`)
 ```
 /minigame reload
 /minigame setlobby | lobby                              main lobby
-/minigame pos1 | pos2                                   region selection (setregion, addmine, scanchests)
+/minigame pos1 | pos2                                   region selection (setregion, addlevel, scanchests)
 /minigame world list|create <n>|load <n>|tp <n>
 /minigame arena create <game> <name>
 /minigame arena delete <game> <name>
@@ -187,7 +187,7 @@ Game specific arena sub commands (tab-completed):
 `bedwars: setbed, addgen, cleargens, addshop, clearshops` ·
 `skywars: addchest, scanchests, clearchests` ·
 `parkour: addcheckpoint, clearcheckpoints, setfinish, seticon, setdifficulty, setdisplayname` ·
-`prison: addmine, delmine, setminespawn, resetmine, listmines`.
+`ctf: setflag` · `dropper: addlevel, dellevel, clearlevels, listlevels`.
 
 ---------------------------------------------------------------------------------------------------
 
@@ -271,12 +271,17 @@ Lucky mode replaces every registered chest with a Lucky Block.
   An arena accepts every kit; `setmode duels d1 sumo` restricts it to one kit. Kits: `games/duels.yml`.
 * **Parkour** – `arena create parkour course1`, stand at the start → `setlobby`, stand on every checkpoint in order →
   `addcheckpoint`, on the finish → `setfinish`, `enable`. Each enabled arena is a course in the menu.
-* **Prison** – `arena create prison main`, `setlobby` (spawn), `enable`; per mine `pos1`/`pos2` then
-  `arena addmine prison main a A`. Ranks, sell values and mine block tables: `games/prison.yml`.
-* **Skyblock / OneBlock / SkyGen** – `/minigame world create islands`, `arena create <game> main`,
-  `arena setworld <game> main islands`, stand at the hub → `setlobby`, `enable`. Players do `/<game> create`.
-  Island templates: save a vanilla structure file as
-  `plugins/MidnightMinigames/templates/<game>/island.nbt` (structure block) or edit `template.layers` in the game file.
+* **TNT Run** – `arena create tntrun t1`, select every floor layer with `pos1`/`pos2`, `arena setregion tntrun t1 floor`,
+  `setlobby`, optional `addspawn`/`setspectator`, `enable`. Timing and double jumps: `games/tntrun.yml`.
+* **The Bridge** (solo / duo) – `setspawn bridge b1 red` and `blue`, then `setregion bridge b1 goal_red` and `goal_blue`
+  (the goal each team defends), `setlobby`, `enable`. Duo: `setmode bridge b1 duo` + `setplayers bridge b1 4 4`.
+  Kit, goals needed and building rules: `games/bridge.yml`.
+* **Capture the Flag** (solo / duo) – `setspawn ctf c1 red` and `blue`, stand on each flag spot and run `setflag ctf c1 red`
+  / `blue`, `setlobby`, `enable`. Duo: `setmode ctf c1 duo` + `setplayers ctf c1 4 4`. Rules and kit: `games/ctf.yml`.
+* **Dropper** – per level (in order) stand at the start, select the landing zone with `pos1`/`pos2`, run
+  `arena addlevel dropper d1`; `setlobby`, `enable`. Details: `games/dropper.yml`.
+
+Full step-by-step setup for every game: [ARENAS.md](ARENAS.md).
 
 ---------------------------------------------------------------------------------------------------
 
@@ -287,7 +292,7 @@ Defaults are declared in `plugin.yml`; **every node can be remapped** in `permis
 | Node | Key in permissions.yml | Default | Purpose |
 |---|---|---|---|
 | `midnight.play` | `play` | everyone | play any minigame |
-| `midnight.play.<game>` (`bedwars`, `skywars`, `spleef`, `prison`, `skyblock`, `duels`, `1v1`, `parkour`, `oneblock`, `skygen`) | `play-game` | everyone | negate to block one game |
+| `midnight.play.<game>` (`bedwars`, `skywars`, `spleef`, `tntrun`, `bridge`, `ctf`, `dropper`, `duels`, `1v1`, `parkour`) | `play-game` | everyone | negate to block one game |
 | `midnight.menu` | `menu` | everyone | compass menu and `/bw` style commands |
 | `midnight.party` | `party` | everyone | `/party` |
 | `midnight.spectate` | `spectate` | everyone | `/spectate` |
@@ -297,7 +302,7 @@ Defaults are declared in `plugin.yml`; **every node can be remapped** in `permis
 | `midnight.admin.forcestart` | `admin-forcestart` | op | `/minigame forcestart` |
 | `midnight.admin.stop` | `admin-stop` | op | `/minigame stop` |
 | `midnight.admin.world` | `admin-world` | op | `/minigame world ...` |
-| `midnight.admin.build` | `admin-build` | op | build in the lobby, protected islands, mines, parkour |
+| `midnight.admin.build` | `admin-build` | op | build in the lobby and protected areas |
 | `midnight.admin.stats` | `admin-stats` | op | `/minigame stats`, `addcoins` |
 
 ---------------------------------------------------------------------------------------------------
@@ -324,11 +329,7 @@ The expansion registers automatically if PlaceholderAPI is installed; otherwise 
 | `%midnight_top_<stat>_<rank>_name%` / `_value%` | global leaderboard, e.g. `%midnight_top_wins_1_name%` (stat: wins, losses, kills, deaths, coins, games_played) |
 | `%midnight_bedwars_beds%` | beds destroyed |
 | `%midnight_parkour_time%` `_course` `_checkpoint` `_best_<course>` `_top_<course>_<n>_name` / `_time` | parkour |
-| `%midnight_prison_rank%` `_mined` `_balance` `_next_rank` `_next_cost` | prison |
-| `%midnight_skyblock_radius%` `_members` `_level` | skyblock |
 | `%midnight_duels_elo_<kit>%` `%midnight_duels_top_<kit>_<n>_name%` `_elo` (also `1v1`) | ranked ladder |
-| `%midnight_oneblock_blocks%` `_phase` `_next_phase_in` | oneblock |
-| `%midnight_skygen_rank%` `_prestige` `_multiplier` `_generators` `_speed` | skygen |
 
 **Adding your own:** in a minigame, `registry.register("mygame", (player, key) -> ...)` inside
 `registerPlaceholders(PlaceholderRegistry)` exposes `%midnight_mygame_<key>%` (also usable in scoreboards through
@@ -340,8 +341,8 @@ The expansion registers automatically if PlaceholderAPI is installed; otherwise 
 
 NPC plugins only need to run a command. Nothing in MidnightMinigames depends on a specific NPC plugin.
 
-* **Run as the player** (works everywhere): `bw`, `sw`, `spleef`, `duels`, `1v1`, `parkour`, `prison`, `skyblock`,
-  `oneblock`, `skygen`  → opens that game's menu. `bw join solo` skips the menu and queues.
+* **Run as the player** (works everywhere): `bw`, `sw`, `spleef`, `tntrun`, `bridge`, `ctf`, `dropper`, `duels`, `1v1`,
+  `parkour`  → opens that game's menu. `bw join solo` skips the menu and queues.
 * **Run as console** (for plugins that only do console commands): append the player's name – the last argument may be
   the target player: `bw join solo <playername>`, `bw open <playername>`, `parkour join course1 <playername>`.
   Every NPC plugin has its own placeholder for the clicker's name; use it as the last argument.
@@ -371,7 +372,7 @@ Events (Bukkit events, main thread): `MinigameJoinEvent` (cancellable), `Minigam
 
 ### Adding a new minigame
 
-1. Extend `AbstractArenaMinigame` (rounds) or `AbstractPersistentMinigame` / `AbstractIslandMinigame` (progression).
+1. Extend `AbstractArenaMinigame` (rounds) or `AbstractPersistentMinigame` (progression). Two-team games can extend `TeamFightGame`.
 2. For rounds also write a `GameInstance` subclass: implement `onGameStart()` (teleport, teams, kits); optionally
    `onTick()`, `onPlayerDeath()`, `checkWin()`, `onResetWorld()` and the event hooks inherited from `PlayerContext`
    (`onBlockBreak`, `onDamage`, `onMove` ...). Lifecycle, spectators, stats, rewards, resets are inherited.
@@ -384,27 +385,28 @@ Events (Bukkit events, main thread): `MinigameJoinEvent` (cancellable), `Minigam
 
 ## 12. Newer features and known limitations
 
+Prison, Skyblock, OneBlock and SkyGen were removed; TNT Run, The Bridge, Capture the Flag and Dropper were added.
+
 Added after the first version (all untested on a live server): BedWars **traps** (It's a Trap, Counter-Offensive, Alarm,
 Miner Fatigue; queue of 3, costs in `games/bedwars.yml`), **bridge egg**, **pop-up tower**, **magic milk**, **dream
 defender** golems, **quick-buy** (shift-click any shop item to favourite it), **pickaxe/axe tiers** that drop one tier on
 death, and **floating generator timers**. SkyWars **glass cages** and a **shrinking border** (per-player border, so
 arenas can share a world). **Snowball spleef** mode. A **ranked ELO ladder** for Duels and 1v1 (`/duels elo`,
-`/duels top`). Skyblock **island levels** (`/skyblock level`, `/skyblock top`) and a visual **island border**.
+`/duels top`).
 
 What is still not implemented:
 
 * **BedWars**: block-placement limits by height, tool *selling*, spectator compass, team chat.
 * **SkyWars**: no deathmatch phase besides the shrinking border.
-* **Skyblock**: no biomes; protection covers break/place/containers only (not buckets, entities or pistons crossing the border).
-* **OneBlock / SkyGen**: islands are never recycled (grid cells are not reused after deletion); deletion clears a
-  configurable radius, not the whole cell.
+* **TNT Run / Bridge / CTF / Dropper**: new, only checked with a simulated server (state machine, scoring, flag handling,
+  block removal and restore). Real-player behaviour (hit detection in Dropper, double-jump feel, kit items) is untested.
+* **Capture the Flag**: flags are banner blocks; there is no flag compass or per-team chat.
 * **Block restore** (default reset mode) does not restore tile-entity contents; liquids, fire, TNT and falling blocks
   are tracked. Use `world-copy` for maps where that matters.
 * Player snapshots (inventory/location restored when leaving round games) are in memory only: a server crash while
   players are inside a round game loses their pre-game inventory. Persistent games never touch inventories.
 * MySQL support is implemented with plain JDBC (one reconnecting connection on the storage thread, no pool) and is
   untested; SQLite is the default and the tested path.
-* Only one OneBlock/SkyGen/Skyblock hub arena is used (the first enabled arena of the game).
 * Nothing here has run on a live Paper server yet. Report problems with the exact console output.
 
 ---------------------------------------------------------------------------------------------------

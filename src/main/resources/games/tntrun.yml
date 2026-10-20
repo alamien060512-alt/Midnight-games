@@ -1,0 +1,14 @@
+# ======================================================================================
+#  TNT Run - games/tntrun.yml
+#  Setup: /minigame arena create tntrun <arena>, select the WHOLE floor (all layers) with /minigame pos1 & pos2 and
+#  /minigame arena setregion tntrun <arena> floor, setlobby, optionally addspawn (otherwise players spawn randomly on the
+#  top layer), setspectator, enable. Build the floor as you like (sand over TNT is the classic look).
+# ======================================================================================
+remove-delay-ticks: 10      # how long a block survives after you step on it (20 ticks = 1 second)
+remove-block-below: true    # also remove the block under it (sand AND the TNT below)
+grace-seconds: 3            # nothing vanishes for the first seconds
+fall-depth: 2               # eliminated this many blocks below the lowest floor layer
+double-jumps: 3             # jumps in the air per game (0 = off). Press space twice. Modes may override.
+keep-blocks:                # blocks that never vanish
+  - BEDROCK
+  - BARRIER

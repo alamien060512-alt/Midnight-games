@@ -104,7 +104,7 @@ public final class WorldService {
         }
     }
 
-    /** Creates an empty (void) world. Used by Skyblock/OneBlock/SkyGen and /minigame world create. */
+    /** Creates an empty (void) world. Used by /minigame world create. */
     public World createVoid(String name) {
         World existing = Bukkit.getWorld(name);
         if (existing != null) {

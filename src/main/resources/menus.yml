@@ -42,42 +42,41 @@ main-menu:
       material: DIAMOND_SHOVEL
       name: "<aqua><bold>SPLEEF"
       lore: ["<gray>Dig the floor from under your enemies.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a mode"]
-    duels:
+    tntrun:
       slot: 13
+      material: TNT
+      name: "<red><bold>TNT RUN"
+      lore: ["<gray>The floor vanishes as you run.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to play"]
+    bridge:
+      slot: 14
+      material: TERRACOTTA
+      name: "<gold><bold>THE BRIDGE"
+      lore: ["<gray>Cross the bridge and score goals.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a mode"]
+    ctf:
+      slot: 15
+      material: RED_BANNER
+      name: "<red><bold>CAPTURE THE FLAG"
+      lore: ["<gray>Steal the enemy flag.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a mode"]
+    dropper:
+      slot: 16
+      material: WATER_BUCKET
+      name: "<aqua><bold>DROPPER"
+      lore: ["<gray>Fall through the maps. Don't touch the walls!", "", "<white>Playing: <green>{players}", "", "<yellow>Click to play"]
+    duels:
+      slot: 20
       material: DIAMOND_SWORD
       name: "<gold><bold>DUELS"
       lore: ["<gray>Pick a kit and fight.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a kit"]
     1v1:
-      slot: 14
+      slot: 22
       material: IRON_SWORD
       name: "<green><bold>1V1"
       lore: ["<gray>Quick random 1v1 matches.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to queue"]
     parkour:
-      slot: 15
+      slot: 24
       material: LEATHER_BOOTS
       name: "<green><bold>PARKOUR"
       lore: ["<gray>Race through courses for the best time.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to choose a course"]
-    prison:
-      slot: 16
-      material: IRON_BARS
-      name: "<gold><bold>PRISON"
-      lore: ["<gray>Mine, sell, rank up.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to enter"]
-    skyblock:
-      slot: 20
-      material: GRASS_BLOCK
-      name: "<green><bold>SKYBLOCK"
-      lore: ["<gray>Build your own island.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to enter"]
-    oneblock:
-      slot: 22
-      material: OAK_LOG
-      name: "<yellow><bold>ONEBLOCK"
-      lore: ["<gray>One block. Endless progression.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to enter"]
-    skygen:
-      slot: 24
-      material: BEACON
-      name: "<light_purple><bold>SKYGEN"
-      lore: ["<gray>Generators, upgrades, prestige.", "", "<white>Playing: <green>{players}", "", "<yellow>Click to enter"]
-
 # Mode menu
 
 mode-menu:

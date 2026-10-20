@@ -17,11 +17,11 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Generic per-game command (/bw, /sw, /prison ...). Designed for NPC plugins:
+ * Generic per-game command (/bw, /sw, /ctf ...). Designed for NPC plugins:
  * <ul>
  *   <li>{@code /bw} opens the BedWars mode menu,</li>
  *   <li>{@code /bw join <mode>} queues the player directly (no GUI),</li>
- *   <li>other arguments are passed to the minigame (e.g. {@code /prison rankup}).</li>
+ *   <li>other arguments are passed to the minigame (e.g. {@code /duels elo}).</li>
  * </ul>
  * NPC plugins that run commands from the console can append the player: {@code /bw join solo %player%}
  * or {@code /bw <player>} (console or midnight.admin.arena only).

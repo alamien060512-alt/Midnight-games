@@ -351,6 +351,14 @@ public final class CoreListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onToggleFlight(org.bukkit.event.player.PlayerToggleFlightEvent e) {
+        PlayerContext c = ctx(e.getPlayer());
+        if (c != null) {
+            c.onToggleFlight(e.getPlayer(), e);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDrop(PlayerDropItemEvent e) {
         PlayerContext c = ctx(e.getPlayer());
         if (c != null) {

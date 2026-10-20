@@ -1,0 +1,11 @@
+# ======================================================================================
+#  Dropper - games/dropper.yml
+#  Fall through each level without touching anything and land in the finish zone (usually water). First to finish
+#  every level wins. Setup (see ARENAS.md), once per level, in order:
+#    stand at the START of the level, select the landing zone with /minigame pos1 & pos2, then
+#    /minigame arena addlevel dropper <arena>
+#  Other commands: dellevel <n>, clearlevels, listlevels.
+# ======================================================================================
+arm-depth: 1.5      # collisions only count after the player fell this many blocks below the start
+hitbox: 0.31        # half width used to detect walls (vanilla players are 0.3)
+void-resets: true   # falling below the arena void height sends you back to the level start

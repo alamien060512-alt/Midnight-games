@@ -106,7 +106,7 @@ public interface Minigame {
         return List.of();
     }
 
-    /** Handles /bw, /prison ... arguments. Return false to fall back to opening the menu. */
+    /** Handles /bw, /duels ... arguments. Return false to fall back to opening the menu. */
     default boolean handleGameCommand(Player player, String[] args) {
         return false;
     }

@@ -30,13 +30,13 @@ import dev.midnight.minigames.core.storage.SqliteStorage;
 import dev.midnight.minigames.core.storage.StorageProvider;
 import dev.midnight.minigames.core.world.WorldService;
 import dev.midnight.minigames.minigames.bedwars.BedWarsMinigame;
+import dev.midnight.minigames.minigames.bridge.BridgeMinigame;
+import dev.midnight.minigames.minigames.ctf.CtfMinigame;
+import dev.midnight.minigames.minigames.dropper.DropperMinigame;
+import dev.midnight.minigames.minigames.tntrun.TntRunMinigame;
 import dev.midnight.minigames.minigames.duels.DuelsMinigame;
-import dev.midnight.minigames.minigames.oneblock.OneBlockMinigame;
 import dev.midnight.minigames.minigames.onevone.OneVOneMinigame;
 import dev.midnight.minigames.minigames.parkour.ParkourMinigame;
-import dev.midnight.minigames.minigames.prison.PrisonMinigame;
-import dev.midnight.minigames.minigames.skyblock.SkyblockMinigame;
-import dev.midnight.minigames.minigames.skygen.SkyGenMinigame;
 import dev.midnight.minigames.minigames.skywars.SkyWarsMinigame;
 import dev.midnight.minigames.minigames.spleef.SpleefMinigame;
 import dev.midnight.minigames.util.ItemFactory;
@@ -194,13 +194,13 @@ public final class MidnightMinigames extends JavaPlugin {
         minigameManager.register(new BedWarsMinigame(this));
         minigameManager.register(new SkyWarsMinigame(this));
         minigameManager.register(new SpleefMinigame(this));
-        minigameManager.register(new PrisonMinigame(this));
-        minigameManager.register(new SkyblockMinigame(this));
+        minigameManager.register(new TntRunMinigame(this));
+        minigameManager.register(new BridgeMinigame(this));
+        minigameManager.register(new CtfMinigame(this));
+        minigameManager.register(new DropperMinigame(this));
         minigameManager.register(new DuelsMinigame(this));
         minigameManager.register(new OneVOneMinigame(this));
         minigameManager.register(new ParkourMinigame(this));
-        minigameManager.register(new OneBlockMinigame(this));
-        minigameManager.register(new SkyGenMinigame(this));
     }
 
     private void registerCommands() {
@@ -213,9 +213,9 @@ public final class MidnightMinigames extends JavaPlugin {
         bind("leave", leave, null);
         SpectateCommand spec = new SpectateCommand(this);
         bind("spectate", spec, spec);
-        String[][] gameCommands = {{"bw", "bedwars"}, {"sw", "skywars"}, {"spleef", "spleef"}, {"prison", "prison"},
-                {"skyblock", "skyblock"}, {"duels", "duels"}, {"1v1", "1v1"}, {"parkour", "parkour"},
-                {"oneblock", "oneblock"}, {"skygen", "skygen"}};
+        String[][] gameCommands = {{"bw", "bedwars"}, {"sw", "skywars"}, {"tntrun", "tntrun"},
+                {"bridge", "bridge"}, {"ctf", "ctf"}, {"dropper", "dropper"}, {"spleef", "spleef"},
+                {"duels", "duels"}, {"1v1", "1v1"}, {"parkour", "parkour"}};
         for (String[] c : gameCommands) {
             GameCommand gc = new GameCommand(this, c[1]);
             bind(c[0], gc, gc);
