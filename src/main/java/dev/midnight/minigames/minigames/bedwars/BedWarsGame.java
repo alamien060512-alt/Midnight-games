@@ -959,6 +959,13 @@ final class BedWarsGame extends GameInstance {
                 }
             }
         }
+        Material placedType = placed.getType();
+        if ((placedType == Material.CHEST || placedType == Material.TRAPPED_CHEST || placedType == Material.ENDER_CHEST)
+                && !onOwnIsland(player, placed)) {
+            e.setCancelled(true);
+            plugin.getMessages().send(player, "bedwars.chest-own-island");
+            return;
+        }
         blocks.recordPlaced(e);
         ItemStack inHand = e.getItemInHand();
         if (ItemFactory.readTag(inHand, Keys.LUCKY) != null) {
@@ -1002,7 +1009,8 @@ final class BedWarsGame extends GameInstance {
     @Override
     public void onInteract(Player player, PlayerInteractEvent e) {
         super.onInteract(player, e);
-        if (e.isCancelled() || e.getHand() != EquipmentSlot.HAND) {
+        // NOTE: PlayerInteractEvent#isCancelled() is true for clicks in the air (no block), so check the item result instead.
+        if (e.useItemInHand() == org.bukkit.event.Event.Result.DENY || e.getHand() != EquipmentSlot.HAND) {
             return;
         }
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock() != null && !player.isSneaking()
@@ -1075,6 +1083,108 @@ final class BedWarsGame extends GameInstance {
         player.openInventory(teamChests.computeIfAbsent(owner.getId(),
                 k -> Bukkit.createInventory(null, 27, plugin.getMessages().get("bedwars.team-chest-title"))));
         return true;
+    }
+
+    /** Whether a block is within {@code chests.place-radius} (default: team-radius) of the player's own team spawn. */
+    private boolean onOwnIsland(Player player, Block b) {
+        GameTeam team = teamByPlayer.get(player.getUniqueId());
+        if (team == null || team.getSpawn().getWorld() != b.getWorld()) {
+            return false;
+        }
+        double r = Math.max(1.0, cfg.getDouble("chests.place-radius", cfg.getDouble("chests.team-radius", 12.0)));
+        return team.getSpawn().distanceSquared(b.getLocation().add(0.5, 0.5, 0.5)) <= r * r;
+    }
+
+    /** Items the game hands out again after death: they must not be stored in chests or dropped (duplication). */
+    private static boolean isSoulbound(ItemStack it) {
+        if (it == null || it.getType().isAir()) {
+            return false;
+        }
+        String n = it.getType().name();
+        return n.endsWith("_SWORD") || n.endsWith("_PICKAXE") || n.endsWith("_AXE") || n.equals("SHEARS")
+                || n.endsWith("_HELMET") || n.endsWith("_CHESTPLATE") || n.endsWith("_LEGGINGS") || n.endsWith("_BOOTS");
+    }
+
+    private boolean containerOpen(org.bukkit.inventory.InventoryView view) {
+        org.bukkit.event.inventory.InventoryType t = view.getTopInventory().getType();
+        return t != org.bukkit.event.inventory.InventoryType.CRAFTING && t != org.bukkit.event.inventory.InventoryType.PLAYER;
+    }
+
+    @Override
+    public void onInventoryClick(Player player, org.bukkit.event.inventory.InventoryClickEvent e) {
+        if (!players.contains(player.getUniqueId()) || !containerOpen(e.getView())) {
+            return;
+        }
+        int topSize = e.getView().getTopInventory().getSize();
+        boolean inTop = e.getRawSlot() >= 0 && e.getRawSlot() < topSize;
+        boolean bad = false;
+        if (inTop) {
+            bad = isSoulbound(e.getCursor());
+            if (e.getClick() == org.bukkit.event.inventory.ClickType.NUMBER_KEY && e.getHotbarButton() >= 0) {
+                bad |= isSoulbound(player.getInventory().getItem(e.getHotbarButton()));
+            }
+            if (e.getClick() == org.bukkit.event.inventory.ClickType.SWAP_OFFHAND) {
+                bad |= isSoulbound(player.getInventory().getItemInOffHand());
+            }
+        } else if (e.isShiftClick()) {
+            bad = isSoulbound(e.getCurrentItem());
+        }
+        if (bad) {
+            e.setCancelled(true);
+            plugin.getMessages().actionBar(player, "bedwars.cannot-store");
+        }
+    }
+
+    @Override
+    public void onInventoryDrag(Player player, org.bukkit.event.inventory.InventoryDragEvent e) {
+        if (!players.contains(player.getUniqueId()) || !containerOpen(e.getView()) || !isSoulbound(e.getOldCursor())) {
+            return;
+        }
+        int topSize = e.getView().getTopInventory().getSize();
+        for (int raw : e.getRawSlots()) {
+            if (raw < topSize) {
+                e.setCancelled(true);
+                plugin.getMessages().actionBar(player, "bedwars.cannot-store");
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void onDrop(Player player, org.bukkit.event.player.PlayerDropItemEvent e) {
+        super.onDrop(player, e);
+        if (!e.isCancelled() && isSoulbound(e.getItemDrop().getItemStack())) {
+            e.setCancelled(true);
+            plugin.getMessages().actionBar(player, "bedwars.cannot-store");
+        }
+    }
+
+    /** Fireball jumping: the explosion pushes nearby players away and up on top of the vanilla knockback. */
+    @Override
+    public void onProjectileHit(Player shooter, org.bukkit.event.entity.ProjectileHitEvent e) {
+        if (state != GameState.IN_GAME || !(e.getEntity() instanceof Fireball fb)) {
+            return;
+        }
+        double boost = cfg.getDouble("fireball-boost", 0.8);
+        if (boost <= 0) {
+            return;
+        }
+        double radius = Math.max(1.0, cfg.getDouble("fireball-boost-radius", 3.5));
+        Location at = fb.getLocation();
+        for (Player p : getOnlinePlayers()) {
+            if (!players.contains(p.getUniqueId()) || respawning.containsKey(p.getUniqueId()) || p.getWorld() != at.getWorld()) {
+                continue;
+            }
+            org.bukkit.util.Vector away = p.getLocation().add(0, 0.9, 0).toVector().subtract(at.toVector());
+            double dist = away.length();
+            if (dist > radius) {
+                continue;
+            }
+            double power = boost * (0.4 + 0.6 * (1.0 - dist / radius));
+            away.setY(0);
+            org.bukkit.util.Vector push = away.lengthSquared() < 1.0E-4 ? new org.bukkit.util.Vector() : away.normalize().multiply(power);
+            p.setVelocity(p.getVelocity().add(push).add(new org.bukkit.util.Vector(0, 0.55 * power, 0)));
+        }
     }
 
     private boolean isChestInventory(org.bukkit.inventory.Inventory inv) {
@@ -1275,7 +1385,7 @@ final class BedWarsGame extends GameInstance {
         }
         int secs = cfg.getInt("dream-defender-seconds", 180);
         IronGolem g = owner.getWorld().spawn(owner.getLocation(), IronGolem.class, golem -> {
-            golem.setPlayerCreated(true);
+            golem.setPlayerCreated(false); // player-created golems refuse to attack players
             golem.customName(TextUtil.parse(team.getColoredName() + " Defender"));
             golem.setCustomNameVisible(true);
             golem.setPersistent(false);

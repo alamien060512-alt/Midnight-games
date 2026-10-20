@@ -207,6 +207,8 @@ admin:
   coins-added: "{prefix}<green>Gave <white>{amount}<green> coins to <white>{player}<green>."
 
 bedwars:
+  chest-own-island: "{prefix}<red>Chests can only be placed on your own island."
+  cannot-store: "<red>You can't store or drop tools and armor."
   ender-chest-title: "<dark_purple>Ender Chest"
   team-chest-title: "<gray>Team Chest"
   team-chest-locked: "{prefix}<red>That chest belongs to team {team}<red>."

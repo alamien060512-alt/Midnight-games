@@ -71,6 +71,10 @@ chests:
   ender-chest: true
   team-chest: true
   team-radius: 12
+  place-radius: 12      # chests can only be placed this close to your own team spawn (your island)
+
+fireball-boost: 0.8          # extra knockback of a fireball explosion for fireball jumps (0 = vanilla only)
+fireball-boost-radius: 3.5
 
 shop-look-at-player: true   # shop villagers turn to face the nearest player
 shop-look-range: 10         # blocks

@@ -456,6 +456,13 @@ public final class CoreListener implements Listener {
             }
             return;
         }
+        PlayerContext inv = ctx(p);
+        if (inv != null) {
+            inv.onInventoryClick(p, e);
+            if (e.isCancelled()) {
+                return;
+            }
+        }
         // Lobby items (compass / leave item) can never be moved around.
         ItemStack cur = e.getCurrentItem();
         if (cur != null && cur.hasItemMeta() && ItemFactory.readTag(cur, Keys.ACTION) != null
@@ -467,6 +474,39 @@ public final class CoreListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDrag(InventoryDragEvent e) {
         if (e.getView().getTopInventory().getHolder() instanceof MenuHolder) {
+            e.setCancelled(true);
+            return;
+        }
+        if (e.getWhoClicked() instanceof Player p) {
+            PlayerContext c = ctx(p);
+            if (c != null) {
+                c.onInventoryDrag(p, e);
+            }
+        }
+    }
+
+    /** No crafting inside games (items come from the shop). */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onCraft(org.bukkit.event.inventory.CraftItemEvent e) {
+        if (e.getWhoClicked() instanceof Player p && ctx(p) != null) {
+            e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPrepareCraft(org.bukkit.event.inventory.PrepareItemCraftEvent e) {
+        for (org.bukkit.entity.HumanEntity h : e.getViewers()) {
+            if (h instanceof Player p && ctx(p) != null) {
+                e.getInventory().setResult(null);
+                return;
+            }
+        }
+    }
+
+    /** Sleeping in a bed would also set the respawn point, so beds do nothing for players inside a game. */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onBedEnter(org.bukkit.event.player.PlayerBedEnterEvent e) {
+        if (ctx(e.getPlayer()) != null) {
             e.setCancelled(true);
         }
     }

@@ -132,6 +132,12 @@ public interface PlayerContext {
     default void onExplode(EntityExplodeEvent e) {
     }
 
+    default void onInventoryClick(Player player, org.bukkit.event.inventory.InventoryClickEvent e) {
+    }
+
+    default void onInventoryDrag(Player player, org.bukkit.event.inventory.InventoryDragEvent e) {
+    }
+
     default void onToggleFlight(Player player, org.bukkit.event.player.PlayerToggleFlightEvent e) {
     }
 }
