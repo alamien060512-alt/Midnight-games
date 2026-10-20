@@ -207,6 +207,9 @@ admin:
   coins-added: "{prefix}<green>Gave <white>{amount}<green> coins to <white>{player}<green>."
 
 bedwars:
+  ender-chest-title: "<dark_purple>Ender Chest"
+  team-chest-title: "<gray>Team Chest"
+  team-chest-locked: "{prefix}<red>That chest belongs to team {team}<red>."
   cleared: "{prefix}<green>Removed all {what}."
   bad-team: "{prefix}<red>{team} is not a valid team colour."
   look-at-bed: "{prefix}<red>Look at the bed (within 6 blocks) first."

@@ -63,6 +63,8 @@ Modes: `solo`, `doubles`, `3v3`, `4v4`, `4v4v4v4`, `lucky`. One arena has one mo
 ```
 Needs at least 2 team spawns, a bed for each team, at least one generator, an item shop, an upgrade shop and a spectator spot. Remove generators or shops with `cleargens` and `clearshops`.
 
+**Chests:** players can buy a **Team Chest** (shared by the team) and an **Ender Chest** (personal) in the Utility shop. A normal chest placed within 12 blocks of a team spawn becomes that team's shared chest, and other teams can't open it. Settings: `chests:` in `games/bedwars.yml`.
+
 **Build limit:** select the whole map with `/minigame pos1` and `pos2`, then `/minigame arena setregion bedwars speedway bounds`. Players (and bridge eggs, towers and buckets) can then only build inside it. Add a height limit with `build-max-y` in `games/bedwars.yml`. Every team with a spawn gets a base, so make one spawn and bed per team (4v4v4v4 means 4 teams).
 
 ## 2. SkyWars

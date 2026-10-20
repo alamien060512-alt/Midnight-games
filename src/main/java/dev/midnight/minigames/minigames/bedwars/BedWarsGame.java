@@ -84,6 +84,9 @@ final class BedWarsGame extends GameInstance {
     private final Map<Long, GameTeam> bedBlocks = new HashMap<>();
     private final Map<UUID, String> shopEntities = new HashMap<>();
     private org.bukkit.scheduler.BukkitTask shopLookTask;
+    /** Personal ender chests and shared team chests (virtual inventories that live for one game). */
+    private final Map<UUID, org.bukkit.inventory.Inventory> enderChests = new HashMap<>();
+    private final Map<String, org.bukkit.inventory.Inventory> teamChests = new HashMap<>();
     private final Map<UUID, Integer> respawning = new HashMap<>();
     private final Map<UUID, Integer> invulnerableUntil = new HashMap<>();
     private final Map<UUID, Integer> armorTier = new HashMap<>();
@@ -889,6 +892,9 @@ final class BedWarsGame extends GameInstance {
 
     @Override
     protected void onPlayerRemoved(Player player) {
+        if (isChestInventory(player.getOpenInventory().getTopInventory())) {
+            player.closeInventory();
+        }
         respawning.remove(player.getUniqueId());
         player.removePotionEffect(PotionEffectType.HASTE);
     }
@@ -999,6 +1005,10 @@ final class BedWarsGame extends GameInstance {
         if (e.isCancelled() || e.getHand() != EquipmentSlot.HAND) {
             return;
         }
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock() != null && !player.isSneaking()
+                && state == GameState.IN_GAME && players.contains(player.getUniqueId()) && openChest(player, e)) {
+            return;
+        }
         if ((e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && e.getItem() != null) {
             String special = ItemFactory.readTag(e.getItem(), Keys.SPECIAL);
             if ("bridge-egg".equals(special)) {
@@ -1024,6 +1034,53 @@ final class BedWarsGame extends GameInstance {
         }
     }
 
+    /**
+     * Ender chests open a personal chest; normal chests within {@code chests.team-radius} of a team spawn open that
+     * team's shared chest (other teams are locked out). Chests elsewhere behave like vanilla chests.
+     */
+    private boolean openChest(Player player, PlayerInteractEvent e) {
+        Block b = e.getClickedBlock();
+        Material m = b.getType();
+        if (m == Material.ENDER_CHEST && cfg.getBoolean("chests.ender-chest", true)) {
+            e.setCancelled(true);
+            player.openInventory(enderChests.computeIfAbsent(player.getUniqueId(),
+                    k -> Bukkit.createInventory(null, 27, plugin.getMessages().get("bedwars.ender-chest-title"))));
+            return true;
+        }
+        if ((m != Material.CHEST && m != Material.TRAPPED_CHEST) || !cfg.getBoolean("chests.team-chest", true)) {
+            return false;
+        }
+        double radius = Math.max(1.0, cfg.getDouble("chests.team-radius", 12.0));
+        Location c = b.getLocation().add(0.5, 0.5, 0.5);
+        GameTeam owner = null;
+        double best = radius * radius;
+        for (GameTeam t : teams.values()) {
+            if (t.getSpawn().getWorld() != c.getWorld()) {
+                continue;
+            }
+            double d = t.getSpawn().distanceSquared(c);
+            if (d <= best) {
+                best = d;
+                owner = t;
+            }
+        }
+        if (owner == null) {
+            return false;
+        }
+        e.setCancelled(true);
+        if (owner != teamByPlayer.get(player.getUniqueId())) {
+            plugin.getMessages().send(player, "bedwars.team-chest-locked", "team", owner.getColoredName());
+            return true;
+        }
+        player.openInventory(teamChests.computeIfAbsent(owner.getId(),
+                k -> Bukkit.createInventory(null, 27, plugin.getMessages().get("bedwars.team-chest-title"))));
+        return true;
+    }
+
+    private boolean isChestInventory(org.bukkit.inventory.Inventory inv) {
+        return enderChests.containsValue(inv) || teamChests.containsValue(inv);
+    }
+
     @Override
     public void onInteractEntity(Player player, PlayerInteractEntityEvent e) {
         String type = shopEntities.get(e.getRightClicked().getUniqueId());
@@ -1044,6 +1101,13 @@ final class BedWarsGame extends GameInstance {
 
     @Override
     protected void onCleanup() {
+        for (Player p : getOnlinePlayers()) {
+            if (isChestInventory(p.getOpenInventory().getTopInventory())) {
+                p.closeInventory();
+            }
+        }
+        enderChests.clear();
+        teamChests.clear();
         if (shopLookTask != null) {
             shopLookTask.cancel();
             shopLookTask = null;

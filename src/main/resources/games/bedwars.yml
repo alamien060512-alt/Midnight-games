@@ -65,6 +65,13 @@ scoreboard:
 # blocks inside it. build-max-y adds a height limit (0 = none).
 build-max-y: 0
 
+# Chests: ender chests open a personal chest; normal chests placed within team-radius blocks of your team spawn open the
+# team's shared chest (other teams cannot open it). Chests elsewhere on the map are normal chests.
+chests:
+  ender-chest: true
+  team-chest: true
+  team-radius: 12
+
 shop-look-at-player: true   # shop villagers turn to face the nearest player
 shop-look-range: 10         # blocks
 
@@ -147,6 +154,8 @@ shop:
         - {id: sponge, material: SPONGE, amount: 4, cost: {gold: 3}, name: "<white>Sponge"}
         - {id: bridge-egg, material: EGG, special: bridge-egg, cost: {gold: 4}, name: "<white>Bridge Egg", lore: ["<gray>Throw it to build a wool bridge."]}
         - {id: popup-tower, material: CHEST, special: popup-tower, cost: {iron: 24}, name: "<white>Pop-up Tower", lore: ["<gray>Place it to build a ladder tower."]}
+        - {id: team-chest, material: CHEST, cost: {iron: 24}, name: "<white>Team Chest", lore: ["<gray>Place it near your spawn.", "<gray>Your whole team shares it."]}
+        - {id: ender-chest, material: ENDER_CHEST, cost: {emerald: 1}, name: "<white>Ender Chest", lore: ["<gray>Your own private chest."]}
         - {id: magic-milk, material: MILK_BUCKET, cost: {gold: 4}, name: "<white>Magic Milk", lore: ["<gray>Enemy traps ignore you for 30s."]}
         - {id: dream-defender, material: IRON_GOLEM_SPAWN_EGG, special: dream-defender, cost: {iron: 120}, name: "<white>Dream Defender", lore: ["<gray>An iron golem defends your base."]}
         - {id: lucky, material: SPONGE, lucky-block: true, cost: {emerald: 2}, name: "<yellow>Lucky Block", lore: ["<gray>Only works in blocks you place"]}
