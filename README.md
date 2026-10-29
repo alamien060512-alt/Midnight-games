@@ -157,7 +157,7 @@ that sit close together, also mark each arena's area so explosions and cleanup s
 | `/party create`, `invite <player>`, `accept`, `leave`, `disband`, `kick <player>`, `list` | parties (only the leader queues, the party joins together and stays on one team when the team size allows) |
 | `/cosmetic` (`/cosmetics`, `/cos`) | cosmetic shop: trails, kill effects, win effects and hats, bought with coins |
 | `/ranks` (`/rank`), `/ranks info` | rank shop: VIP / MVP / LEGEND bought with coins (upgrades pay only the difference) |
-| `/minigamemenu` (alias of `/games`) | open the main menu. Entering a nether portal runs it automatically (see `portal:` in config.yml) |
+| `/minigamemenu` (alias of `/games`) | open the main menu. |
 | `/spectate <player>` | spectate a running game that supports spectators |
 | `/duels challenge <player> [kit]`, `/duels accept` | direct duel on a free arena |
 | `/duels elo [kit]`, `/duels top [kit]` (also `/1v1`) | ranked rating and leaderboard |
@@ -290,17 +290,14 @@ Full step-by-step setup for every game: [ARENAS.md](ARENAS.md).
 
 ---------------------------------------------------------------------------------------------------
 
-### Cosmetics, ranks and the nether portal
+### Cosmetics and ranks
 
 * **Cosmetics** (`cosmetics.yml`): `/cosmetic` opens a shop with four categories. **Trails** (particles while you walk, lobby only
   by default), **kill effects** (played where your victim died), **win effects** (played on the winners) and **hats** (a block
   on your head in the lobby). Click an item to buy it (click again to confirm), click an owned item to equip or unequip it.
   Ownership is stored with the player's stats. Prices, particles, sounds and the whole catalogue are in `cosmetics.yml`.
-* **Ranks** (`ranks.yml`): `/ranks` sells VIP / MVP / LEGEND for coins. A rank gives a prefix (tab list when `tab.enabled: true`,
-  chat when `chat.enabled: true` in `ranks.yml`), a multiplier for coins earned in games, optional permission nodes and optional
+* **Ranks** (`ranks.yml`): `/ranks` sells VIP / MVP / LEGEND for coins. A rank gives a prefix (chat, tab list and display name; see `ranks.yml`), a multiplier for coins earned in games, optional permission nodes and optional
   console commands (e.g. LuckPerms) on grant/removal. Buying a higher rank only costs the difference.
-* **Nether portal** (`portal.nether` in config.yml): touching a nether portal runs `minigamemenu` as the player instead of sending
-  them to the Nether. Change the command, the cooldown or restrict it to some worlds there. Players inside a game are ignored.
 
 ---------------------------------------------------------------------------------------------------
 

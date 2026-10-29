@@ -2,7 +2,7 @@
 #  Ranks - ranks.yml          (players open the shop with /ranks)
 #  Ranks are bought with coins. The order below is the ladder: a higher rank replaces a lower one.
 #  A rank gives:
-#    prefix            shown in the tab list (config.yml -> tab.enabled: true) and in chat (chat.enabled below)
+#    prefix            shown in chat, in the tab list and in the player's display name
 #    coin-multiplier   multiplies the coins a player earns from winning/killing in minigames
 #    permissions       permission nodes granted while the player has the rank (no permission plugin needed)
 #    commands          console commands run when the rank is granted, {player} = the player's name
@@ -15,9 +15,11 @@ menu:
 
 upgrade-pays-difference: true   # buying a higher rank only costs the price difference
 default-prefix: ""              # prefix for players without a rank, e.g. "<gray>"
+show-in-display-name: true      # put the prefix in the player's display name (chat and other plugins that use it)
+show-in-tab: true               # put the prefix in the tab list (only when config.yml -> tab.enabled is false; otherwise the tab list below draws it)
 
 chat:
-  enabled: false                # format chat with the rank prefix. Leave off if another chat plugin formats chat
+  enabled: true                 # format chat as: prefix + name + message. Set false if another chat plugin formats chat
   format: "{prefix}<white>{player}<gray>: <white>{message}"
 
 ranks:

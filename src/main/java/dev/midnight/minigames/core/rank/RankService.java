@@ -84,6 +84,7 @@ public final class RankService implements TabService.TabProvider {
         }
         for (Player p : Bukkit.getOnlinePlayers()) {
             applyPermissions(p);
+            refreshDisplay(p);
         }
     }
 
@@ -140,7 +141,7 @@ public final class RankService implements TabService.TabProvider {
             runCommands(rank.commands, p);
         }
         applyPermissions(p);
-        plugin.getTabService().update(p);
+        refreshDisplay(p);
         plugin.getScoreboardService().refresh(p);
     }
 
@@ -169,6 +170,26 @@ public final class RankService implements TabService.TabProvider {
 
     public void onLoaded(Player p) {
         applyPermissions(p);
+        refreshDisplay(p);
+    }
+
+    /**
+     * Makes the rank visible: the player's display name (chat, other plugins' %player_displayname% style placeholders) and
+     * the tab list name carry the prefix. When the plugin's own tab list (config.yml -> tab.enabled) is on, it draws the
+     * prefix itself.
+     */
+    public void refreshDisplay(Player p) {
+        var y = plugin.getConfigurationManager().ranks();
+        String prefix = prefixOf(p);
+        boolean show = !prefix.isEmpty();
+        if (y.getBoolean("show-in-display-name", true)) {
+            p.displayName(show ? TextUtil.parse(prefix + "<white>" + p.getName()) : null);
+        }
+        if (plugin.getTabService().isEnabled()) {
+            plugin.getTabService().update(p);
+        } else if (y.getBoolean("show-in-tab", true)) {
+            p.playerListName(show ? TextUtil.parse(prefix + "<white>" + p.getName()) : null);
+        }
     }
 
     public void onQuit(Player p) {

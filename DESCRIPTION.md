@@ -40,7 +40,6 @@ Everything runs in **one world**: you place arenas wherever you like, and the pl
 - **Scoreboards, tab list and effects.** Per-game scoreboards, tab prefixes and configurable sounds.
 - **Cosmetics shop.** `/cosmetic`: trails, kill effects, win effects and hats, bought with coins and saved per player.
 - **Ranks.** `/ranks`: VIP / MVP / LEGEND bought with coins. They give a tag, a coin multiplier and optional permissions or LuckPerms commands.
-- **Portal menu.** Walk into a nether portal to open the minigame menu.
 - **Per-game commands.** `/bw`, `/sw`, `/spleef`, `/tntrun`, `/bridge`, `/ctf`, `/dropper`, `/duels`, `/1v1`, `/parkour`. They work from **Citizens or any NPC plugin** and from the console.
 - **PlaceholderAPI** (optional) with the `midnight` identifier, ready for holograms and scoreboards.
 - **Developer API and events.** Join, leave, start and end events, plus a public API.
