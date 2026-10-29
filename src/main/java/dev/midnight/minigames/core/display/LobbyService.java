@@ -119,5 +119,8 @@ public final class LobbyService {
         if (cfg.getBoolean("lobby.give-compass-on-join", true)) {
             giveCompass(p);
         }
+        if (plugin.getCosmetics() != null) {
+            plugin.getCosmetics().applyHat(p);
+        }
     }
 }

@@ -52,6 +52,12 @@ commands:
   tntrun:
     description: Open the TNT Run menu
     aliases: [tr]
+  cosmetic:
+    description: Open the cosmetic shop
+    aliases: [cosmetics, cos]
+  ranks:
+    description: Open the rank shop
+    aliases: [rank]
 
 permissions:
   midnight.play:
@@ -93,6 +99,12 @@ permissions:
     default: true
   midnight.menu:
     description: Use the compass menu and game commands
+    default: true
+  midnight.cosmetic:
+    description: Use the cosmetic shop
+    default: true
+  midnight.ranks:
+    description: Use the rank shop
     default: true
   midnight.party:
     description: Use parties

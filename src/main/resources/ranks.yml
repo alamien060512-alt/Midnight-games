@@ -1,0 +1,53 @@
+# ======================================================================================
+#  Ranks - ranks.yml          (players open the shop with /ranks)
+#  Ranks are bought with coins. The order below is the ladder: a higher rank replaces a lower one.
+#  A rank gives:
+#    prefix            shown in the tab list (config.yml -> tab.enabled: true) and in chat (chat.enabled below)
+#    coin-multiplier   multiplies the coins a player earns from winning/killing in minigames
+#    permissions       permission nodes granted while the player has the rank (no permission plugin needed)
+#    commands          console commands run when the rank is granted, {player} = the player's name
+#    remove-commands   console commands run when the rank is replaced or removed
+#  Using LuckPerms? Add:  commands: ["lp user {player} parent add vip"]  and  remove-commands: ["lp user {player} parent remove vip"]
+#  Admins: /ranks set <player> <rank|none>
+# ======================================================================================
+menu:
+  title: "<gradient:#7b2ff7:#f107a3><bold>Ranks"
+
+upgrade-pays-difference: true   # buying a higher rank only costs the price difference
+default-prefix: ""              # prefix for players without a rank, e.g. "<gray>"
+
+chat:
+  enabled: false                # format chat with the rank prefix. Leave off if another chat plugin formats chat
+  format: "{prefix}<white>{player}<gray>: <white>{message}"
+
+ranks:
+  - id: vip
+    name: "<green>VIP"
+    prefix: "<green>[VIP] "
+    price: 5000
+    coin-multiplier: 1.25
+    icon: EMERALD
+    lore: ["<gray>A green [VIP] tag in chat and tab", "<gray>and more coins from every game."]
+    permissions: []
+    commands: []
+    remove-commands: []
+  - id: mvp
+    name: "<aqua>MVP"
+    prefix: "<aqua>[MVP] "
+    price: 15000
+    coin-multiplier: 1.5
+    icon: DIAMOND
+    lore: ["<gray>An aqua [MVP] tag in chat and tab", "<gray>and +50% coins from every game."]
+    permissions: []
+    commands: []
+    remove-commands: []
+  - id: legend
+    name: "<gold>LEGEND"
+    prefix: "<gold>[LEGEND] "
+    price: 40000
+    coin-multiplier: 2.0
+    icon: NETHER_STAR
+    lore: ["<gray>A gold [LEGEND] tag in chat and tab", "<gray>and double coins from every game."]
+    permissions: []
+    commands: []
+    remove-commands: []

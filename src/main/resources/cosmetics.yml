@@ -1,0 +1,88 @@
+# ======================================================================================
+#  Cosmetics - cosmetics.yml          (players open the shop with /cosmetic)
+#  Everything is bought with coins and kept forever. Categories (do not rename the keys):
+#    trails        particles that follow you while you walk (lobby; set trails.in-game: true for games too)
+#    kill-effects  played where your victim died
+#    win-effects   played on you when your team wins
+#    hats          an item on your head in the lobby
+#  Item keys:  id, name, material (menu icon; for hats also the item worn), price (0 = free), lore
+#    effect: PARTICLES (default) | LIGHTNING | FIREWORK
+#    particle: any Bukkit particle name, count, spread, speed, height
+#    DUST particles take color (#rrggbb) and size; DUST_COLOR_TRANSITION also color-to; BLOCK particles take block: MATERIAL
+#    sound: a sound key such as entity.generic.explode (optional), pitch
+#    win effects only: repeat (how many bursts) and interval-ticks (time between bursts)
+# ======================================================================================
+menu:
+  title: "<gradient:#7b2ff7:#f107a3><bold>Cosmetics"
+
+trails:
+  interval-ticks: 4     # how often the trail particles are drawn
+  in-game: false        # also show trails while playing a minigame
+
+categories:
+  trails:
+    name: "<aqua><bold>Trails"
+    icon: BLAZE_POWDER
+    slot: 10
+    lore: ["<gray>Particles that follow you around."]
+    items:
+      - {id: flame, name: "<gold>Flame Trail", material: BLAZE_POWDER, price: 400, particle: FLAME, count: 3, spread: 0.15, speed: 0.01}
+      - {id: hearts, name: "<red>Heart Trail", material: RED_DYE, price: 500, particle: HEART, count: 2, spread: 0.25, speed: 0}
+      - {id: notes, name: "<green>Music Trail", material: NOTE_BLOCK, price: 500, particle: NOTE, count: 2, spread: 0.25, speed: 0}
+      - {id: happy, name: "<green>Happy Trail", material: EMERALD, price: 400, particle: HAPPY_VILLAGER, count: 3, spread: 0.25, speed: 0}
+      - {id: clouds, name: "<white>Cloud Trail", material: WHITE_WOOL, price: 400, particle: CLOUD, count: 3, spread: 0.2, speed: 0.01}
+      - {id: snow, name: "<aqua>Snow Trail", material: SNOWBALL, price: 600, particle: SNOWFLAKE, count: 4, spread: 0.25, speed: 0.01}
+      - {id: portal, name: "<dark_purple>Portal Trail", material: OBSIDIAN, price: 800, particle: PORTAL, count: 10, spread: 0.3, speed: 0.3}
+      - {id: endrod, name: "<white>Star Trail", material: END_ROD, price: 900, particle: END_ROD, count: 3, spread: 0.2, speed: 0.01}
+      - {id: soulfire, name: "<aqua>Soul Fire Trail", material: SOUL_TORCH, price: 1000, particle: SOUL_FIRE_FLAME, count: 3, spread: 0.15, speed: 0.01}
+      - {id: witch, name: "<light_purple>Witch Trail", material: FERMENTED_SPIDER_EYE, price: 800, particle: WITCH, count: 4, spread: 0.25, speed: 0}
+      - {id: cherry, name: "<light_purple>Blossom Trail", material: CHERRY_LEAVES, price: 700, particle: CHERRY_LEAVES, count: 3, spread: 0.3, speed: 0, height: 1.5}
+      - {id: ruby, name: "<red>Ruby Trail", material: REDSTONE, price: 600, particle: DUST, color: "#e01e37", size: 1.2, count: 4, spread: 0.2, speed: 0}
+      - {id: sapphire, name: "<blue>Sapphire Trail", material: LAPIS_LAZULI, price: 600, particle: DUST, color: "#2a6cff", size: 1.2, count: 4, spread: 0.2, speed: 0}
+
+  kill-effects:
+    name: "<red><bold>Kill Effects"
+    icon: IRON_SWORD
+    slot: 12
+    lore: ["<gray>Shown where your victim falls."]
+    items:
+      - {id: smoke, name: "<gray>Smoke Puff", material: GUNPOWDER, price: 500, particle: LARGE_SMOKE, count: 15, spread: 0.4, speed: 0.02, height: 1.0}
+      - {id: blood, name: "<dark_red>Blood Splash", material: REDSTONE_BLOCK, price: 800, particle: BLOCK, block: REDSTONE_BLOCK, count: 40, spread: 0.4, speed: 0.1, height: 1.0}
+      - {id: hearts, name: "<red>Heart Burst", material: APPLE, price: 900, particle: HEART, count: 12, spread: 0.5, speed: 0, height: 1.2}
+      - {id: soul, name: "<aqua>Soul Release", material: SOUL_LANTERN, price: 1200, particle: SOUL, count: 25, spread: 0.3, speed: 0.05, height: 1.2}
+      - {id: explosion, name: "<gold>Explosion", material: TNT, price: 1000, particle: EXPLOSION, count: 3, spread: 0.4, speed: 0, height: 1.0, sound: entity.generic.explode}
+      - {id: firework, name: "<yellow>Firework", material: FIREWORK_ROCKET, price: 1500, effect: FIREWORK}
+      - {id: lightning, name: "<yellow>Lightning Strike", material: LIGHTNING_ROD, price: 2000, effect: LIGHTNING}
+      - {id: totem, name: "<gold>Totem Pop", material: TOTEM_OF_UNDYING, price: 2500, particle: TOTEM_OF_UNDYING, count: 30, spread: 0.4, speed: 0.3, height: 1.0, sound: item.totem.use}
+
+  win-effects:
+    name: "<gold><bold>Win Effects"
+    icon: NETHER_STAR
+    slot: 14
+    lore: ["<gray>Celebrate when your team wins."]
+    items:
+      - {id: hearts, name: "<red>Heart Rain", material: RED_DYE, price: 1500, particle: HEART, count: 15, spread: 0.8, speed: 0, height: 2.0, repeat: 10, interval-ticks: 6}
+      - {id: flames, name: "<gold>Flame Ring", material: FIRE_CHARGE, price: 2000, particle: FLAME, count: 30, spread: 1.0, speed: 0.02, height: 0.5, repeat: 12, interval-ticks: 6}
+      - {id: confetti, name: "<light_purple>Confetti", material: PINK_DYE, price: 2200, particle: DUST_COLOR_TRANSITION, color: "#ff3399", color-to: "#33ccff", size: 1.5, count: 40, spread: 1.0, speed: 0, height: 2.0, repeat: 10, interval-ticks: 6}
+      - {id: fireworks, name: "<yellow>Firework Show", material: FIREWORK_ROCKET, price: 2500, effect: FIREWORK, repeat: 6, interval-ticks: 10}
+      - {id: totem, name: "<gold>Totem Fountain", material: TOTEM_OF_UNDYING, price: 3000, particle: TOTEM_OF_UNDYING, count: 40, spread: 0.6, speed: 0.4, height: 1.0, repeat: 6, interval-ticks: 6}
+      - {id: storm, name: "<yellow>Lightning Storm", material: LIGHTNING_ROD, price: 3000, effect: LIGHTNING, repeat: 4, interval-ticks: 12}
+
+  hats:
+    name: "<green><bold>Hats"
+    icon: DIAMOND_HELMET
+    slot: 16
+    lore: ["<gray>Wear a block on your head in the lobby."]
+    items:
+      - {id: sponge, name: "<yellow>Sponge Hat", material: SPONGE, price: 400}
+      - {id: melon, name: "<green>Melon Hat", material: MELON, price: 500}
+      - {id: bookshelf, name: "<gold>Bookshelf Hat", material: BOOKSHELF, price: 600}
+      - {id: glass, name: "<white>Glass Hat", material: GLASS, price: 600}
+      - {id: jack, name: "<gold>Jack o' Lantern", material: JACK_O_LANTERN, price: 800}
+      - {id: glowstone, name: "<yellow>Glowstone Hat", material: GLOWSTONE, price: 900}
+      - {id: lantern, name: "<aqua>Sea Lantern Hat", material: SEA_LANTERN, price: 1000}
+      - {id: tnt, name: "<red>TNT Hat", material: TNT, price: 1500}
+      - {id: gold, name: "<gold>Gold Block Hat", material: GOLD_BLOCK, price: 3000}
+      - {id: emerald, name: "<green>Emerald Block Hat", material: EMERALD_BLOCK, price: 4000}
+      - {id: diamond, name: "<aqua>Diamond Block Hat", material: DIAMOND_BLOCK, price: 5000}
+      - {id: beacon, name: "<white>Beacon Hat", material: BEACON, price: 6000}

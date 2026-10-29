@@ -38,6 +38,9 @@ Everything runs in **one world**: you place arenas wherever you like, and the pl
 - **Queues, teams and parties.** Automatic team balancing and a party system (`/party`).
 - **Stats and economy.** Wins, losses, kills, deaths, coins and K/D stored asynchronously in **SQLite (default) or MySQL**. Built-in coins, or **Vault** if installed.
 - **Scoreboards, tab list and effects.** Per-game scoreboards, tab prefixes and configurable sounds.
+- **Cosmetics shop.** `/cosmetic`: trails, kill effects, win effects and hats, bought with coins and saved per player.
+- **Ranks.** `/ranks`: VIP / MVP / LEGEND bought with coins. They give a tag, a coin multiplier and optional permissions or LuckPerms commands.
+- **Portal menu.** Walk into a nether portal to open the minigame menu.
 - **Per-game commands.** `/bw`, `/sw`, `/spleef`, `/tntrun`, `/bridge`, `/ctf`, `/dropper`, `/duels`, `/1v1`, `/parkour`. They work from **Citizens or any NPC plugin** and from the console.
 - **PlaceholderAPI** (optional) with the `midnight` identifier, ready for holograms and scoreboards.
 - **Developer API and events.** Join, leave, start and end events, plus a public API.
@@ -83,6 +86,8 @@ The full setup for every game is in **ARENAS.md**.
 | `/games` | Open the main menu |
 | `/bw` `/sw` `/spleef` `/tntrun` `/bridge` `/ctf` `/dropper` `/duels` `/1v1` `/parkour` | Open a game's menu, or `join <mode>` |
 | `/party` | Create and manage parties |
+| `/cosmetic` | Cosmetic shop |
+| `/ranks` | Rank shop |
 | `/leave` | Leave the current game |
 | `/spectate` | Spectate a game |
 | `/minigame` | Admin: arenas, worlds, reload, force-start, stop, stats |

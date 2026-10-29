@@ -21,6 +21,8 @@ public final class ConfigurationManager {
     private ConfigFile messages;
     private ConfigFile menus;
     private ConfigFile permissions;
+    private ConfigFile cosmetics;
+    private ConfigFile ranks;
     private final Map<String, ConfigFile> games = new HashMap<>();
 
     public ConfigurationManager(MidnightMinigames plugin) {
@@ -32,10 +34,14 @@ public final class ConfigurationManager {
         messages = new ConfigFile(plugin, "messages.yml");
         menus = new ConfigFile(plugin, "menus.yml");
         permissions = new ConfigFile(plugin, "permissions.yml");
+        cosmetics = new ConfigFile(plugin, "cosmetics.yml");
+        ranks = new ConfigFile(plugin, "ranks.yml");
         config.load();
         messages.load();
         menus.load();
         permissions.load();
+        cosmetics.load();
+        ranks.load();
         games.clear();
         for (String id : GAME_FILES) {
             ConfigFile f = new ConfigFile(plugin, "games/" + id + ".yml");
@@ -59,6 +65,14 @@ public final class ConfigurationManager {
 
     public YamlConfiguration menus() {
         return menus.yaml();
+    }
+
+    public YamlConfiguration cosmetics() {
+        return cosmetics.yaml();
+    }
+
+    public YamlConfiguration ranks() {
+        return ranks.yaml();
     }
 
     public YamlConfiguration permissions() {

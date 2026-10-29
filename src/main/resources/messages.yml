@@ -307,6 +307,50 @@ dropper:
 tntrun:
   double-jump: "<aqua>Double jump! <gray>({left} left)"
 
+cosmetic:
+  bought: "{prefix}<green>Bought and equipped <white>{item}<green> for <gold>${price}<green>."
+  equipped: "{prefix}<green>Equipped <white>{item}<green>."
+  unequipped: "{prefix}<yellow>Removed your {category}<yellow> cosmetic."
+  not-enough: "{prefix}<red>That costs <gold>${price}<red> and you have <gold>${coins}<red>."
+  already-owned: "{prefix}<yellow>You already own that."
+  loading: "{prefix}<red>Your data is still loading, try again in a moment."
+  unknown: "{prefix}<red>Unknown cosmetic <white>{item}<red> (format: category.id)."
+  given: "{prefix}<green>Gave <white>{item}<green> to <white>{player}<green>."
+  taken: "{prefix}<green>Took <white>{item}<green> from <white>{player}<green>."
+  menu:
+    owned: "<gray>Owned: <white>{owned}<gray>/<white>{total}"
+    active: "<gray>Equipped: <white>{item}"
+    none: "<dark_gray>nothing"
+    open: "<yellow>Click to open"
+    equipped: "<green>Equipped <gray>- click to unequip"
+    click-equip: "<yellow>Click to equip"
+    price: "<gray>Price: <gold>${price}"
+    click-buy: "<yellow>Click to buy"
+    click-confirm: "<red><bold>Click again to confirm"
+    back: "<red>Back"
+    prev: "<yellow>Previous page"
+    next: "<yellow>Next page"
+    unequip: "<red>Unequip"
+    balance-title: "<gold>Your coins"
+    balance: "<gray>Balance: <gold>${coins}"
+
+ranks:
+  bought: "{prefix}<green>You are now <white>{rank}<green>! Thank you!"
+  not-enough: "{prefix}<red>That costs <gold>${price}<red> and you have <gold>${coins}<red>."
+  already-owned: "{prefix}<yellow>That is already your rank."
+  have-better: "{prefix}<yellow>You already have a better rank."
+  unknown: "{prefix}<red>Unknown rank <white>{rank}<red>."
+  set: "{prefix}<green>Set the rank of <white>{player}<green> to <white>{rank}<green>."
+  info: "{prefix}<gray>Your rank: <white>{rank}<gray> | coin multiplier <white>x{multiplier}"
+  menu:
+    prefix: "<gray>Tag: {prefix}"
+    multiplier: "<gray>Coins: <green>x{multiplier}"
+    owned: "<green>Your rank"
+    lower: "<dark_gray>You have a better rank"
+    price: "<gray>Price: <gold>${price}"
+    click-buy: "<yellow>Click to buy"
+    click-confirm: "<red><bold>Click again to confirm"
+
 duels:
   challenge-usage: "{prefix}<red>Usage: /duels challenge <player> [kit]"
   challenge-sent: "{prefix}<green>Challenged <white>{player}<green> to a <white>{kit}<green> duel."

@@ -68,12 +68,28 @@ public final class PlayerManager {
                 PlayerProfile current = profiles.get(id);
                 if (current != null) {
                     current.applyLoaded(stored.stats(), stored.data());
+                    if (player.isOnline()) {
+                        if (plugin.getRanks() != null) {
+                            plugin.getRanks().onLoaded(player);
+                        }
+                        if (plugin.getCosmetics() != null) {
+                            plugin.getCosmetics().onLoaded(player);
+                        }
+                        plugin.getTabService().update(player);
+                        plugin.getScoreboardService().refresh(player);
+                    }
                 }
             });
         });
     }
 
     public void handleQuit(Player player) {
+        if (plugin.getRanks() != null) {
+            plugin.getRanks().onQuit(player);
+        }
+        if (plugin.getCosmetics() != null) {
+            plugin.getCosmetics().onQuit(player);
+        }
         PlayerProfile profile = profiles.remove(player.getUniqueId());
         contexts.remove(player.getUniqueId());
         if (profile != null) {

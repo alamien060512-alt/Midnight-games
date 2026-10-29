@@ -155,6 +155,9 @@ that sit close together, also mark each arena's area so explosions and cleanup s
 | `/<game> join <mode>` | queue directly, no GUI (`/bw join doubles`, `/parkour join course1`, `/duels join sumo`) |
 | `/<game> leave` , `/leave` (`/lobby`, `/hub`) | leave the game / queue / go to lobby |
 | `/party create`, `invite <player>`, `accept`, `leave`, `disband`, `kick <player>`, `list` | parties (only the leader queues, the party joins together and stays on one team when the team size allows) |
+| `/cosmetic` (`/cosmetics`, `/cos`) | cosmetic shop: trails, kill effects, win effects and hats, bought with coins |
+| `/ranks` (`/rank`), `/ranks info` | rank shop: VIP / MVP / LEGEND bought with coins (upgrades pay only the difference) |
+| `/minigamemenu` (alias of `/games`) | open the main menu. Entering a nether portal runs it automatically (see `portal:` in config.yml) |
 | `/spectate <player>` | spectate a running game that supports spectators |
 | `/duels challenge <player> [kit]`, `/duels accept` | direct duel on a free arena |
 | `/duels elo [kit]`, `/duels top [kit]` (also `/1v1`) | ranked rating and leaderboard |
@@ -182,6 +185,8 @@ that sit close together, also mark each arena's area so explosions and cleanup s
 /minigame forcestart <game> <arena>
 /minigame stop <game> <arena>                           (no stats are recorded for admin-stopped games)
 /minigame stats [player]   /minigame addcoins <player> <amount>
+/cosmetic give|take <player> <category.id>              admin: hand out / remove a cosmetic
+/ranks set <player> <rank|none>                         admin: set a rank without paying
 ```
 Game specific arena sub commands (tab-completed):
 `bedwars: setbed, addgen, cleargens, addshop, clearshops` ·
@@ -285,6 +290,20 @@ Full step-by-step setup for every game: [ARENAS.md](ARENAS.md).
 
 ---------------------------------------------------------------------------------------------------
 
+### Cosmetics, ranks and the nether portal
+
+* **Cosmetics** (`cosmetics.yml`): `/cosmetic` opens a shop with four categories. **Trails** (particles while you walk, lobby only
+  by default), **kill effects** (played where your victim died), **win effects** (played on the winners) and **hats** (a block
+  on your head in the lobby). Click an item to buy it (click again to confirm), click an owned item to equip or unequip it.
+  Ownership is stored with the player's stats. Prices, particles, sounds and the whole catalogue are in `cosmetics.yml`.
+* **Ranks** (`ranks.yml`): `/ranks` sells VIP / MVP / LEGEND for coins. A rank gives a prefix (tab list when `tab.enabled: true`,
+  chat when `chat.enabled: true` in `ranks.yml`), a multiplier for coins earned in games, optional permission nodes and optional
+  console commands (e.g. LuckPerms) on grant/removal. Buying a higher rank only costs the difference.
+* **Nether portal** (`portal.nether` in config.yml): touching a nether portal runs `minigamemenu` as the player instead of sending
+  them to the Nether. Change the command, the cooldown or restrict it to some worlds there. Players inside a game are ignored.
+
+---------------------------------------------------------------------------------------------------
+
 ## 8. Permissions
 
 Defaults are declared in `plugin.yml`; **every node can be remapped** in `permissions.yml` (key → node).
@@ -294,6 +313,8 @@ Defaults are declared in `plugin.yml`; **every node can be remapped** in `permis
 | `midnight.play` | `play` | everyone | play any minigame |
 | `midnight.play.<game>` (`bedwars`, `skywars`, `spleef`, `tntrun`, `bridge`, `ctf`, `dropper`, `duels`, `1v1`, `parkour`) | `play-game` | everyone | negate to block one game |
 | `midnight.menu` | `menu` | everyone | compass menu and `/bw` style commands |
+| `midnight.cosmetic` | - | everyone | `/cosmetic` |
+| `midnight.ranks` | - | everyone | `/ranks` |
 | `midnight.party` | `party` | everyone | `/party` |
 | `midnight.spectate` | `spectate` | everyone | `/spectate` |
 | `midnight.admin` | `admin` | op | everything below |
@@ -328,6 +349,8 @@ The expansion registers automatically if PlaceholderAPI is installed; otherwise 
 | `%midnight_var_<name>%` | any scoreboard variable of the current game (`kills`, `team`, `time`, `alive`, `phase`, ...) |
 | `%midnight_top_<stat>_<rank>_name%` / `_value%` | global leaderboard, e.g. `%midnight_top_wins_1_name%` (stat: wins, losses, kills, deaths, coins, games_played) |
 | `%midnight_bedwars_beds%` | beds destroyed |
+| `%midnight_rank%` `_rank_prefix` `_rank_multiplier` | the player's purchased rank |
+| `%midnight_cosmetic_<category>%` | equipped cosmetic, category with `_` for `-`: `trails`, `kill_effects`, `win_effects`, `hats` |
 | `%midnight_parkour_time%` `_course` `_checkpoint` `_best_<course>` `_top_<course>_<n>_name` / `_time` | parkour |
 | `%midnight_duels_elo_<kit>%` `%midnight_duels_top_<kit>_<n>_name%` `_elo` (also `1v1`) | ranked ladder |
 

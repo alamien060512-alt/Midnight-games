@@ -52,6 +52,17 @@ defaults:
   end-delay: 8           # seconds between the winner announcement and the arena reset
   lobby-void-depth: 15   # a waiting player who falls this many blocks below the lobby spawn is teleported back
 
+# Entering a nether portal runs a command instead of teleporting (used to open the minigame menu).
+portal:
+  nether:
+    enabled: true
+    command: "minigamemenu"      # without the slash; {player} = the player's name
+    run-as: player               # player | console
+    cooldown-seconds: 3
+    cancel-teleport: true        # never send the player to the Nether
+    knockback: 0.6               # push the player back out of the portal (0 = off)
+    worlds: []                   # only in these worlds (empty = every world)
+
 party:
   max-size: 4
   invite-expire-seconds: 60
@@ -109,6 +120,7 @@ scoreboard:
         - ""
         - "<white>Player: <aqua>{player}"
         - "<white>Coins: <gold>{coins}"
+        - "<white>Rank: <light_purple>{rank}"
         - "<white>Wins: <green>{wins}"
         - ""
         - "<white>Online: <green>{online}"

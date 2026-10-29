@@ -39,6 +39,9 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Locale;
 
 /**
@@ -47,6 +50,9 @@ import java.util.Locale;
  * players outside of games cost next to nothing.
  */
 public final class CoreListener implements Listener {
+
+    /** Last time a player triggered the nether portal command (portal events fire every tick while inside). */
+    private final Map<UUID, Long> portalCooldown = new HashMap<>();
 
     private final MidnightMinigames plugin;
 
@@ -94,7 +100,75 @@ public final class CoreListener implements Listener {
         plugin.getQueueManager().removePlayer(p.getUniqueId());
         plugin.getPartyManager().handleQuit(p);
         plugin.getScoreboardService().remove(p);
+        portalCooldown.remove(p.getUniqueId());
         plugin.getPlayerManager().handleQuit(p);
+    }
+
+    // ---- nether portal -> minigame menu ----------------------------------------------------------------------
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPortalTouch(org.bukkit.event.entity.EntityPortalEnterEvent e) {
+        if (e.getEntity() instanceof Player p && e.getPortalType() == org.bukkit.PortalType.NETHER) {
+            runPortalCommand(p);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPortalTeleport(org.bukkit.event.player.PlayerPortalEvent e) {
+        if (e.getCause() != org.bukkit.event.player.PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || !portalApplies(e.getPlayer())) {
+            return;
+        }
+        if (plugin.getConfigurationManager().config().getBoolean("portal.nether.cancel-teleport", true)) {
+            e.setCancelled(true);
+        }
+        runPortalCommand(e.getPlayer());
+    }
+
+    private boolean portalApplies(Player p) {
+        var cfg = plugin.getConfigurationManager().config();
+        if (!cfg.getBoolean("portal.nether.enabled", true) || ctx(p) != null) {
+            return false;
+        }
+        List<String> worlds = cfg.getStringList("portal.nether.worlds");
+        return worlds.isEmpty() || worlds.contains(p.getWorld().getName());
+    }
+
+    /** Runs portal.nether.command (default: minigamemenu) for a player who touches a nether portal, at most once per cooldown. */
+    private void runPortalCommand(Player p) {
+        if (!portalApplies(p)) {
+            return;
+        }
+        var cfg = plugin.getConfigurationManager().config();
+        long now = System.currentTimeMillis();
+        long cooldown = Math.max(0, cfg.getInt("portal.nether.cooldown-seconds", 3)) * 1000L;
+        Long last = portalCooldown.get(p.getUniqueId());
+        if (last != null && now - last < cooldown) {
+            return;
+        }
+        portalCooldown.put(p.getUniqueId(), now);
+        String cmd = cfg.getString("portal.nether.command", "minigamemenu");
+        cmd = (cmd.startsWith("/") ? cmd.substring(1) : cmd).replace("{player}", p.getName());
+        double knockback = cfg.getDouble("portal.nether.knockback", 0.6);
+        if (knockback > 0) { // step back out of the portal so the player does not keep standing in it
+            org.bukkit.util.Vector back = p.getLocation().getDirection().setY(0);
+            if (back.lengthSquared() > 1.0E-6) {
+                p.setVelocity(back.normalize().multiply(-knockback).setY(0.25));
+            }
+        }
+        if ("console".equalsIgnoreCase(cfg.getString("portal.nether.run-as", "player"))) {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+        } else {
+            p.performCommand(cmd);
+        }
+    }
+
+    // ---- chat (rank prefixes) --------------------------------------------------------------------------------
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onChat(io.papermc.paper.event.player.AsyncChatEvent e) {
+        if (plugin.getRanks() != null && plugin.getRanks().isChatEnabled()) {
+            e.renderer(io.papermc.paper.chat.ChatRenderer.viewerUnaware((source, name, message) -> plugin.getRanks().formatChat(source, message)));
+        }
     }
 
     // ---- combat / death ----------------------------------------------------------------------------------

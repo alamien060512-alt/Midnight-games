@@ -80,6 +80,26 @@ public final class PlaceholderService {
             default:
                 break;
         }
+        if (player != null && plugin.getRanks() != null) {
+            switch (p) {
+                case "rank" -> {
+                    var r = plugin.getRanks().getRank(player);
+                    return r == null ? "-" : TextUtil.plain(TextUtil.parse(r.name));
+                }
+                case "rank_prefix" -> {
+                    return TextUtil.plain(TextUtil.parse(plugin.getRanks().prefixOf(player)));
+                }
+                case "rank_multiplier" -> {
+                    return String.format(java.util.Locale.ROOT, "%.2f", plugin.getRanks().multiplier(player));
+                }
+                default -> {
+                }
+            }
+            if (p.startsWith("cosmetic_") && plugin.getCosmetics() != null) {
+                var item = plugin.getCosmetics().getActive(player, p.substring(9).replace('_', '-'));
+                return item == null ? "-" : TextUtil.plain(TextUtil.parse(item.name));
+            }
+        }
         if (player != null) {
             PlayerStats s = plugin.getPlayerManager().getStats(player);
             switch (p) {

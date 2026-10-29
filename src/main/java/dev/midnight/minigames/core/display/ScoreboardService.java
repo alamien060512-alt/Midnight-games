@@ -173,6 +173,10 @@ public final class ScoreboardService {
         vars.put("player", p.getName());
         vars.put("online", String.valueOf(Bukkit.getOnlinePlayers().size()));
         vars.put("coins", TextUtil.formatNumber(stats.getCoins()));
+        if (plugin.getRanks() != null) {
+            var rank = plugin.getRanks().getRank(p);
+            vars.put("rank", rank == null ? "-" : TextUtil.plain(TextUtil.parse(rank.name)));
+        }
         vars.put("wins", String.valueOf(stats.getWins()));
         vars.put("losses", String.valueOf(stats.getLosses()));
         vars.put("kills", String.valueOf(stats.getKills()));

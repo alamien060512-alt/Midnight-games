@@ -1,15 +1,19 @@
 package dev.midnight.minigames;
 
+import dev.midnight.minigames.commands.CosmeticCommand;
 import dev.midnight.minigames.commands.GameCommand;
 import dev.midnight.minigames.commands.LeaveCommand;
 import dev.midnight.minigames.commands.MenuCommand;
 import dev.midnight.minigames.commands.MinigameCommand;
 import dev.midnight.minigames.commands.PartyCommand;
+import dev.midnight.minigames.commands.RankCommand;
 import dev.midnight.minigames.commands.SpectateCommand;
 import dev.midnight.minigames.core.arena.ArenaManager;
 import dev.midnight.minigames.core.config.ConfigurationManager;
 import dev.midnight.minigames.core.config.Messages;
 import dev.midnight.minigames.core.config.PermissionService;
+import dev.midnight.minigames.core.cosmetic.CosmeticService;
+import dev.midnight.minigames.core.rank.RankService;
 import dev.midnight.minigames.core.display.EffectService;
 import dev.midnight.minigames.core.display.LobbyService;
 import dev.midnight.minigames.core.display.ScoreboardService;
@@ -77,6 +81,8 @@ public final class MidnightMinigames extends JavaPlugin {
     private PlaceholderRegistry placeholderRegistry;
     private PlaceholderService placeholderService;
     private PlaceholderHook placeholderHook;
+    private CosmeticService cosmetics;
+    private RankService ranks;
 
     public static MidnightMinigames getInstance() {
         return instance;
@@ -115,9 +121,13 @@ public final class MidnightMinigames extends JavaPlugin {
         placeholderRegistry = new PlaceholderRegistry();
         placeholderService = new PlaceholderService(this);
         placeholderHook = new PlaceholderHook(this);
+        cosmetics = new CosmeticService(this);
+        ranks = new RankService(this);
 
         effects.reload();
         economy.reload();
+        cosmetics.reload();
+        ranks.reload();
         arenaManager.loadAll();
         registerBuiltInMinigames();
 
@@ -148,6 +158,12 @@ public final class MidnightMinigames extends JavaPlugin {
         }
         if (scoreboardService != null) {
             scoreboardService.shutdown();
+        }
+        if (cosmetics != null) {
+            cosmetics.shutdown();
+        }
+        if (ranks != null) {
+            ranks.shutdown();
         }
         if (placeholderHook != null) {
             placeholderHook.unregister();
@@ -209,6 +225,10 @@ public final class MidnightMinigames extends JavaPlugin {
         PartyCommand party = new PartyCommand(this);
         bind("party", party, party);
         bind("games", new MenuCommand(this), null);
+        CosmeticCommand cosmetic = new CosmeticCommand(this);
+        bind("cosmetic", cosmetic, cosmetic);
+        RankCommand rankCommand = new RankCommand(this);
+        bind("ranks", rankCommand, rankCommand);
         LeaveCommand leave = new LeaveCommand(this);
         bind("leave", leave, null);
         SpectateCommand spec = new SpectateCommand(this);
@@ -239,6 +259,8 @@ public final class MidnightMinigames extends JavaPlugin {
         configurationManager.reload();
         effects.reload();
         economy.reload();
+        cosmetics.reload();
+        ranks.reload();
         arenaManager.loadAll();
         minigameManager.reloadAll();
         scoreboardService.start();
@@ -249,6 +271,14 @@ public final class MidnightMinigames extends JavaPlugin {
     }
 
     // ---- accessors ------------------------------------------------------------------------------------
+
+    public CosmeticService getCosmetics() {
+        return cosmetics;
+    }
+
+    public RankService getRanks() {
+        return ranks;
+    }
 
     public ConfigurationManager getConfigurationManager() {
         return configurationManager;

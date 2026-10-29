@@ -657,6 +657,9 @@ public abstract class GameInstance implements PlayerContext {
                     plugin.getMessages().title(p, "win");
                     plugin.getEffects().play(p, "win");
                     plugin.getEffects().firework(p.getLocation());
+                    if (plugin.getCosmetics() != null) {
+                        plugin.getCosmetics().playWinEffect(p);
+                    }
                 } else if (won.isEmpty()) {
                     plugin.getMessages().title(p, "draw"); // a draw is neither a win nor a loss
                 } else {
@@ -691,6 +694,9 @@ public abstract class GameInstance implements PlayerContext {
 
     protected void reward(Player p, String type) {
         double amount = plugin.getConfigurationManager().config().getDouble("games." + minigame.getId() + ".rewards." + type, 0);
+        if (plugin.getRanks() != null) {
+            amount *= plugin.getRanks().multiplier(p);
+        }
         if (amount > 0) {
             plugin.getPlayerManager().addCoins(p, amount);
             plugin.getMessages().send(p, "game.reward." + type, "coins", TextUtil.formatNumber(amount));
@@ -925,6 +931,9 @@ public abstract class GameInstance implements PlayerContext {
             return;
         }
         Player credited = killer != null ? killer : recentAttacker(victim);
+        if (credited != null && !credited.equals(victim) && plugin.getCosmetics() != null) {
+            plugin.getCosmetics().playKillEffect(credited, victim.getLocation());
+        }
         onPlayerDeath(victim, credited, cause);
     }
 
