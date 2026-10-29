@@ -126,6 +126,9 @@ public final class ScoreboardService {
             }
             boards.put(player.getUniqueId(), b);
             player.setScoreboard(b.scoreboard);
+            if (plugin.getRanks() != null) {
+                plugin.getRanks().applyNametags(b.scoreboard);
+            }
         }
         render(player, b);
     }
@@ -176,6 +179,7 @@ public final class ScoreboardService {
         if (plugin.getRanks() != null) {
             var rank = plugin.getRanks().getRank(p);
             vars.put("rank", rank == null ? "-" : TextUtil.plain(TextUtil.parse(rank.name)));
+            vars.put("rank_prefix", rank == null ? "" : rank.prefix);
         }
         vars.put("wins", String.valueOf(stats.getWins()));
         vars.put("losses", String.valueOf(stats.getLosses()));

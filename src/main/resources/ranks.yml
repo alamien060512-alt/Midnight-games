@@ -16,6 +16,7 @@ menu:
 upgrade-pays-difference: true   # buying a higher rank only costs the price difference
 default-prefix: ""              # prefix for players without a rank, e.g. "<gray>"
 show-in-display-name: true      # put the prefix in the player's display name (chat and other plugins that use it)
+show-nametag: true              # put the prefix above the player's head and in the tab list (scoreboard teams, every player sees it)
 show-in-tab: true               # put the prefix in the tab list (only when config.yml -> tab.enabled is false; otherwise the tab list below draws it)
 
 chat:

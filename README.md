@@ -296,7 +296,7 @@ Full step-by-step setup for every game: [ARENAS.md](ARENAS.md).
   by default), **kill effects** (played where your victim died), **win effects** (played on the winners) and **hats** (a block
   on your head in the lobby). Click an item to buy it (click again to confirm), click an owned item to equip or unequip it.
   Ownership is stored with the player's stats. Prices, particles, sounds and the whole catalogue are in `cosmetics.yml`.
-* **Ranks** (`ranks.yml`): `/ranks` sells VIP / MVP / LEGEND for coins. A rank gives a prefix (chat, tab list and display name; see `ranks.yml`), a multiplier for coins earned in games, optional permission nodes and optional
+* **Ranks** (`ranks.yml`): `/ranks` sells VIP / MVP / LEGEND for coins. A rank gives a prefix (chat, tab list, above the player's head and in the display name; see `ranks.yml`), a multiplier for coins earned in games, optional permission nodes and optional
   console commands (e.g. LuckPerms) on grant/removal. Buying a higher rank only costs the difference.
 
 ---------------------------------------------------------------------------------------------------

@@ -14,13 +14,17 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionAttachment;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -187,13 +191,94 @@ public final class RankService implements TabService.TabProvider {
         }
         if (plugin.getTabService().isEnabled()) {
             plugin.getTabService().update(p);
-        } else if (y.getBoolean("show-in-tab", true)) {
+        } else if (y.getBoolean("show-in-tab", true) && !nametagsOn()) { // with nametag teams the team prefix already shows in the tab list
             p.playerListName(show ? TextUtil.parse(prefix + "<white>" + p.getName()) : null);
+        } else if (nametagsOn()) {
+            p.playerListName(null);
+        }
+        refreshNametags();
+    }
+
+    // ---- nametags (scoreboard teams): the prefix above the head and in the tab list ----------------------------------------
+
+    private static final String TEAM_PREFIX = "mmr_";
+
+    private boolean nametagsOn() {
+        return plugin.getConfigurationManager().ranks().getBoolean("show-nametag", true);
+    }
+
+    /** Puts every online player into the team of their rank on every viewer's scoreboard (main board and per-player boards). */
+    public void refreshNametags() {
+        Set<Scoreboard> boards = new HashSet<>();
+        if (Bukkit.getScoreboardManager() != null) {
+            boards.add(Bukkit.getScoreboardManager().getMainScoreboard());
+        }
+        for (Player v : Bukkit.getOnlinePlayers()) {
+            boards.add(v.getScoreboard());
+        }
+        for (Scoreboard sb : boards) {
+            applyNametags(sb);
+        }
+    }
+
+    /** Brings one scoreboard up to date (also called when a player's sidebar scoreboard is created). */
+    public void applyNametags(Scoreboard sb) {
+        if (sb == null) {
+            return;
+        }
+        if (!nametagsOn()) {
+            for (Team t : new ArrayList<>(sb.getTeams())) {
+                if (t.getName().startsWith(TEAM_PREFIX)) {
+                    t.unregister();
+                }
+            }
+            return;
+        }
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            Rank r = getRank(p);
+            Team wanted = r == null || r.prefix.isEmpty() ? null : teamFor(sb, r);
+            Team current = sb.getEntryTeam(p.getName());
+            if (current != null && !current.getName().startsWith(TEAM_PREFIX)) {
+                continue; // a team of another plugin (game teams, ...) wins
+            }
+            if (current != null && current != wanted) {
+                current.removeEntry(p.getName());
+            }
+            if (wanted != null && current != wanted) {
+                wanted.addEntry(p.getName());
+            }
+        }
+    }
+
+    private Team teamFor(Scoreboard sb, Rank r) {
+        String name = TEAM_PREFIX + r.id;
+        Team t = sb.getTeam(name);
+        if (t == null) {
+            t = sb.registerNewTeam(name);
+        }
+        t.prefix(TextUtil.parse(r.prefix));
+        return t;
+    }
+
+    private void removeNametag(Player p) {
+        Set<Scoreboard> boards = new HashSet<>();
+        if (Bukkit.getScoreboardManager() != null) {
+            boards.add(Bukkit.getScoreboardManager().getMainScoreboard());
+        }
+        for (Player v : Bukkit.getOnlinePlayers()) {
+            boards.add(v.getScoreboard());
+        }
+        for (Scoreboard sb : boards) {
+            Team t = sb.getEntryTeam(p.getName());
+            if (t != null && t.getName().startsWith(TEAM_PREFIX)) {
+                t.removeEntry(p.getName());
+            }
         }
     }
 
     public void onQuit(Player p) {
         attachments.remove(p.getUniqueId());
+        removeNametag(p);
     }
 
     // ---- buying ----------------------------------------------------------------------------------------------------------
@@ -241,6 +326,9 @@ public final class RankService implements TabService.TabProvider {
 
     @Override
     public String prefix(Player player) {
+        if (nametagsOn()) {
+            return null; // the team prefix is already part of the tab list name
+        }
         String p = prefixOf(player);
         return p.isEmpty() ? null : p;
     }

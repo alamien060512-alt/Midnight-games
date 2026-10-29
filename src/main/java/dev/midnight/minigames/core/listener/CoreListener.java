@@ -102,7 +102,7 @@ public final class CoreListener implements Listener {
 
     // ---- chat (rank prefixes) --------------------------------------------------------------------------------
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onChat(io.papermc.paper.event.player.AsyncChatEvent e) {
         if (plugin.getRanks() != null && plugin.getRanks().isChatEnabled()) {
             e.renderer(io.papermc.paper.chat.ChatRenderer.viewerUnaware((source, name, message) -> plugin.getRanks().formatChat(source, message)));
